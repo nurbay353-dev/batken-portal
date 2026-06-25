@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── ЖАРДАМЧЫ ФУНКЦИЯЛАР ────────────────────────────────
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isLoggedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isLoggedIn() && request.auth.token.email in [
+        'admin@batken.kg'
+        // Башка adminдерди ушул жерге кошуңуз
+      ];
+    }
+    function isApproved() {
+      return resource.data.status == 'approved';
+    }
+
+    // ─── ЖАРНАМАЛАР (ads) ───────────────────────────────────
+    match /ads/{docId} {
+      // Баары бекитилген жарнамаларды окуй алат
+      allow read: if isApproved() || isAdmin() || isOwner(resource.data.authorId);
+      // Катталган колдонуучу жаңы жарнама кошо алат
+      allow create: if isLoggedIn()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() < 200;
+      // Автор өз жарнамасын өзгөртө алат (pending абалда)
+      allow update: if (isOwner(resource.data.authorId) && resource.data.status == 'pending')
+        || isAdmin();
+      // Өчүрүү — жалаң гана admin же автор
+      allow delete: if isAdmin() || isOwner(resource.data.authorId);
+    }
+
+    // ─── ВАКАНСИЯЛАР (jobs) ─────────────────────────────────
+    match /jobs/{docId} {
+      allow read: if isApproved() || isAdmin() || isOwner(resource.data.authorId);
+      allow create: if isLoggedIn()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0;
+      allow update: if (isOwner(resource.data.authorId) && resource.data.status == 'pending')
+        || isAdmin();
+      allow delete: if isAdmin() || isOwner(resource.data.authorId);
+    }
+
+    // ─── УЮМДАР (orgs) ──────────────────────────────────────
+    match /orgs/{docId} {
+      allow read: if isApproved() || isAdmin() || isOwner(resource.data.authorId);
+      allow create: if isLoggedIn()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0;
+      allow update: if (isOwner(resource.data.authorId) && resource.data.status == 'pending')
+        || isAdmin();
+      allow delete: if isAdmin() || isOwner(resource.data.authorId);
+    }
+
+    // ─── КОЛДОНУУЧУЛАР ПРОФИЛИ (users) ──────────────────────
+    match /users/{userId} {
+      allow read: if isLoggedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+  }
+}
