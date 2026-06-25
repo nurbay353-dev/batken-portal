@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ky">
+
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+ <meta name="theme-color" content="#C2410C">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="Баткен">
+ <title>Баткен — Шаар Портал</title>
+ <link rel="manifest" href="manifest.json">
+ <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+ <!-- APP -->
+ <div id="app">
+  <!-- ==================== HOME ==================== -->
+  <div class="screen active" id="screen-home">
+   <div class="top-bar">
+    <div>
+     <div class="top-bar-title">🌄 Баткен</div>
+     <div class="top-bar-sub">Шаар портал</div>
+    </div>
+    <div class="top-bar-right">
+     <button onclick="goScreen('account')" style="background:none;border:none;font-size:1.3rem;cursor:pointer">👤</button>
+    </div>
+   </div>
+   <div class="hero">
+    <div class="hero-eyebrow">Баткен шаары</div>
+    <h1>Шаарыңыз<br><em>бир жерде</em></h1>
+    <p>Жарнамалар, жумуш, уюмдар — баары телефонуңузда</p>
+    <div class="hero-search">
+     <input type="text" id="home-search" placeholder="Издөө..." onkeydown="if(event.key==='Enter')doSearch()">
+     <button onclick="doSearch()">🔍</button>
+    </div>
+   </div>
+   <div class="stats-row">
+    <div class="stat">
+     <div class="stat-n" style="color:var(--or)" id="stat-ads">—</div>
+     <div class="stat-l">Жарнама</div>
+    </div>
+    <div class="stat">
+     <div class="stat-n" style="color:var(--gr)" id="stat-jobs">—</div>
+     <div class="stat-l">Жумуш</div>
+    </div>
+    <div class="stat">
+     <div class="stat-n" style="color:var(--pu)" id="stat-orgs">—</div>
+     <div class="stat-l">Уюм</div>
+    </div>
+    <div class="stat">
+     <div class="stat-n" style="color:var(--am)">75К</div>
+     <div class="stat-l">Тургун</div>
+    </div>
+   </div>
+   <div class="sec">
+    <div class="sec-hdr">
+     <div class="sec-title">⚡ Бөлүмдөр</div>
+    </div>
+    <div class="quick-grid">
+     <button class="quick-item" onclick="goScreen('ads')">
+<div class="quick-icon" style="background:var(--or-l)">📋</div>
+<div class="quick-label">Жарнамалар</div>
+</button>
+     <button class="quick-item" onclick="goScreen('jobs')">
+<div class="quick-icon" style="background:var(--gr-l)">💼</div>
+<div class="quick-label">Жумуш</div>
+</button>
+     <button class="quick-item" onclick="goScreen('catalog')">
+<div class="quick-icon" style="background:var(--pu-l)">🏢</div>
+<div class="quick-label">Уюмдар</div>
+</button>
+     <button class="quick-item" onclick="goScreen('account')">
+<div class="quick-icon" style="background:var(--am-l)">👤</div>
+<div class="quick-label">Аккаунт</div>
+</button>
+    </div>
+   </div>
+   <div class="divider"></div>
+   <div class="sec">
+    <div class="sec-hdr">
+     <div class="sec-title">📋 Акыркы жарнамалар</div>
+     <button class="sec-more" onclick="goScreen('ads')">Баары →</button>
+    </div>
+   </div>
+   <div class="hscroll" id="home-ads-scroll">
+    <div class="spinner"></div>
+   </div>
+   <div class="divider"></div>
+   <div class="sec">
+    <div class="sec-hdr">
+     <div class="sec-title">💼 Акыркы вакансиялар</div>
+     <button class="sec-more" onclick="goScreen('jobs')">Баары →</button>
+    </div>
+    <div id="home-jobs-list">
+     <div class="spinner"></div>
+    </div>
+   </div>
+  </div>
+  <!-- ==================== ADS ==================== -->
+  <div class="screen" id="screen-ads">
+   <div class="top-bar">
+    <div class="top-bar-title">📋 Жарнамалар</div>
+    <button onclick="goSubmit('ad')" style="background:var(--or);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Кошуу</button>
+   </div>
+   <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="🔍 Жарнама издөө..." id="ads-search" oninput="filterAds()">
+   </div>
+   <div class="filter-bar" id="ads-filters"></div>
+   <div class="list-wrap" id="ads-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
+  <!-- ==================== JOBS ==================== -->
+  <div class="screen" id="screen-jobs">
+   <div class="top-bar">
+    <div class="top-bar-title">💼 Жумуш</div>
+    <button onclick="goSubmit('job')" style="background:var(--gr);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Вакансия</button>
+   </div>
+   <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="🔍 Вакансия издөө..." id="jobs-search" oninput="filterJobs()">
+   </div>
+   <div class="filter-bar" id="jobs-filters"></div>
+   <div class="list-wrap" id="jobs-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
+  <!-- ==================== CATALOG ==================== -->
+  <div class="screen" id="screen-catalog">
+   <div class="top-bar">
+    <div class="top-bar-title">🏢 Уюмдар</div>
+    <button onclick="goSubmit('org')" style="background:var(--pu);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Уюм</button>
+   </div>
+   <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="🔍 Уюм издөө..." id="orgs-search" oninput="filterOrgs()">
+   </div>
+   <div class="cat-scroll" id="org-cats"></div>
+   <div class="list-wrap" id="orgs-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
+  <!-- ==================== ACCOUNT ==================== -->
+  <div class="screen" id="screen-account">
+   <div class="top-bar">
+    <div class="top-bar-title">👤 Аккаунт</div>
+   </div>
+   <div id="auth-section">
+    <div class="auth-wrap">
+     <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Кирүү</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Катталуу</button>
+     </div>
+     <div class="auth-card">
+      <div class="error-msg" id="auth-error"></div>
+      <div class="success-msg" id="auth-success"></div>
+      <div id="login-form">
+       <label class="field-label">Email</label>
+       <input class="field-input" type="email" id="login-email" placeholder="siz@email.com">
+       <label class="field-label">Сырсөз</label>
+       <input class="field-input" type="password" id="login-pass" placeholder="••••••">
+       <button class="btn-primary" onclick="doLogin()">Кирүү</button>
+      </div>
+      <div id="register-form" style="display:none">
+       <label class="field-label">Аты-жөнү</label>
+       <input class="field-input" type="text" id="reg-name" placeholder="мис: Айгүл Турсунова">
+       <label class="field-label">Email</label>
+       <input class="field-input" type="email" id="reg-email" placeholder="siz@email.com">
+       <label class="field-label">Сырсөз (кеминде 6 белги)</label>
+       <input class="field-input" type="password" id="reg-pass" placeholder="••••••">
+       <button class="btn-primary" onclick="doRegister()">Катталуу</button>
+      </div>
+     </div>
+    </div>
+   </div>
+   <div id="user-section" style="display:none">
+    <div class="account-hero">
+     <div class="avatar" id="user-avatar">👤</div>
+     <div class="account-name" id="user-name">—</div>
+     <div class="account-email" id="user-email">—</div>
+    </div>
+    <div class="menu-list">
+     <button class="menu-item" onclick="goSubmit('ad')">
+<div class="menu-icon" style="background:var(--or-l)">📋</div>
+Жарнама жайгаштыруу
+</button>
+     <button class="menu-item" onclick="goSubmit('job')">
+<div class="menu-icon" style="background:var(--gr-l)">💼</div>
+Вакансия кошуу
+</button>
+     <button class="menu-item" onclick="goSubmit('org')">
+<div class="menu-icon" style="background:var(--pu-l)">🏢</div>
+Уюм кошуу
+</button>
+     <button class="menu-item" id="my-posts-btn" onclick="goMyPosts()">
+<div class="menu-icon" style="background:var(--am-l)">📄</div>
+Менин жарыяларым
+</button>
+     <button class="menu-item" id="admin-btn" style="display:none" onclick="goScreen('admin')">
+<div class="menu-icon" style="background:var(--bl-l)">⚙️</div>
+Admin панели
+</button>
+     <button class="menu-item" onclick="doLogout()" style="color:var(--re)">
+<div class="menu-icon" style="background:var(--re-l)">🚪</div>
+Чыгуу
+</button>
+    </div>
+   </div>
+  </div>
+  <!-- ==================== SUBMIT FORM ==================== -->
+  <div class="screen" id="screen-submit">
+   <div class="top-bar">
+    <button onclick="history.back()||goScreen('home')" style="background:none;border:none;color:var(--or);font-weight:600;cursor:pointer;font-size:.88rem">← Артка</button>
+    <div class="top-bar-title" id="submit-title">Жарнама кошуу</div>
+    <div style="width:60px"></div>
+   </div>
+   <div class="form-wrap">
+    <div class="auth-card" style="background:var(--or-l);border-radius:10px;padding:10px 13px;margin-bottom:14px;font-size:.82rem;color:var(--or-d)">
+     📌 Жарыяңыз модератор текшергенден кийин жарыяланат.
+    </div>
+    <div class="form-card">
+     <div class="error-msg" id="submit-error"></div>
+     <div id="submit-form-content"></div>
+     <button class="btn-primary" onclick="doSubmit()" id="submit-btn">Жиберүү</button>
+    </div>
+   </div>
+  </div>
+  <!-- ==================== DETAIL ==================== -->
+  <div class="screen" id="screen-detail">
+   <div class="top-bar">
+    <button class="back-btn" style="padding:0" onclick="goBack()">← Артка</button>
+    <div style="width:60px"></div>
+   </div>
+   <div id="detail-content"></div>
+  </div>
+  <!-- ==================== ADMIN ==================== -->
+  <div class="screen" id="screen-admin">
+   <div class="top-bar">
+    <button onclick="goScreen('account')" style="background:none;border:none;color:var(--or);font-weight:600;cursor:pointer;font-size:.88rem">← Артка</button>
+    <div class="top-bar-title">⚙️ Admin панели</div>
+    <div style="width:60px"></div>
+   </div>
+   <div class="admin-header">
+    <div class="admin-title">Башкаруу панели</div>
+    <div class="admin-sub">Жарыяларды текшерүү жана бекитүү</div>
+   </div>
+   <div class="admin-stats">
+    <div class="admin-stat">
+     <div class="admin-stat-n" style="color:var(--am)" id="adm-pending">—</div>
+     <div class="admin-stat-l">Текшерүүдө</div>
+    </div>
+    <div class="admin-stat">
+     <div class="admin-stat-n" style="color:var(--gr)" id="adm-approved">—</div>
+     <div class="admin-stat-l">Бекитилген</div>
+    </div>
+    <div class="admin-stat">
+     <div class="admin-stat-n" style="color:var(--re)" id="adm-rejected">—</div>
+     <div class="admin-stat-l">Четке кагылган</div>
+    </div>
+   </div>
+   <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchAdminTab('ads')" id="atab-ads">📋 Жарнамалар</button>
+    <button class="admin-tab" onclick="switchAdminTab('jobs')" id="atab-jobs">💼 Жумуш</button>
+    <button class="admin-tab" onclick="switchAdminTab('orgs')" id="atab-orgs">🏢 Уюмдар</button>
+   </div>
+   <div class="list-wrap" style="padding-top:12px" id="admin-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
+ </div>
+ <!-- BOTTOM NAV -->
+ <nav class="bottom-nav">
+  <button class="nav-item active" id="nav-home" onclick="goScreen('home')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+Башкы
+</button>
+  <button class="nav-item" id="nav-ads" onclick="goScreen('ads')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+Жарнама
+</button>
+  <button class="nav-item" id="nav-jobs" onclick="goScreen('jobs')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+Жумуш
+</button>
+  <button class="nav-item" id="nav-catalog" onclick="goScreen('catalog')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+Уюмдар
+</button>
+  <button class="nav-item" id="nav-account" onclick="goScreen('account')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+Аккаунт
+</button>
+ </nav>
+ <div class="toast" id="toast"></div>
+ <!-- FIREBASE -->
+</body>
+
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --or:#C2410C;--or-l:#FFEDD5;--or-d:#9A3412;
+  --gr:#15803D;--gr-l:#DCFCE7;
+  --am:#D97706;--am-l:#FEF3C7;
+  --re:#DC2626;--re-l:#FEE2E2;
+  --pu:#7C3AED;--pu-l:#EDE9FE;
+  --bl:#2563EB;--bl-l:#DBEAFE;
+  --bg:#F8FAFC;--card:#fff;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --r:14px;--sh:0 2px 16px rgba(0,0,0,.08);
+  --nav:56px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+
+/* APP SHELL */
+#app{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav) + 8px)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-size:.65rem;font-weight:600;transition:.15s;border:none;background:none;padding:0}
+.nav-item.active{color:var(--or)}
+.nav-item svg{width:22px;height:22px}
+
+/* TOP BAR */
+.top-bar{background:var(--card);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 8px rgba(0,0,0,.05)}
+.top-bar-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.15rem;color:var(--or)}
+.top-bar-sub{font-size:.75rem;color:var(--muted)}
+.top-bar-right{display:flex;gap:8px;align-items:center}
+
+/* SCREEN (PAGE) */
+.screen{display:none;animation:fadeIn .18s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#7C2D12,#C2410C 50%,#EA580C);color:#fff;padding:28px 20px 24px;position:relative;overflow:hidden}
+.hero::after{content:'⛰️';position:absolute;right:-10px;bottom:-20px;font-size:100px;opacity:.12;line-height:1}
+.hero-eyebrow{font-size:.72rem;font-weight:700;letter-spacing:1px;opacity:.8;text-transform:uppercase;margin-bottom:6px}
+.hero h1{font-family:'Nunito',sans-serif;font-size:1.75rem;font-weight:900;line-height:1.15;margin-bottom:8px}
+.hero h1 em{font-style:normal;color:#FCD34D}
+.hero p{font-size:.88rem;opacity:.88;line-height:1.55;max-width:280px}
+.hero-search{display:flex;margin-top:16px;background:rgba(255,255,255,.18);border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.3)}
+.hero-search input{flex:1;background:none;border:none;outline:none;padding:11px 14px;color:#fff;font-size:.88rem;font-family:'Inter',sans-serif}
+.hero-search input::placeholder{color:rgba(255,255,255,.7)}
+.hero-search button{background:var(--am);border:none;padding:0 16px;font-weight:700;cursor:pointer;color:#1E293B;font-size:.9rem}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-bottom:1px solid var(--border)}
+.stat{padding:12px 6px;text-align:center;border-right:1px solid var(--border)}
+.stat:last-child{border-right:none}
+.stat-n{font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:900;line-height:1}
+.stat-l{font-size:.62rem;color:var(--muted);margin-top:2px}
+
+/* SECTION */
+.sec{padding:18px 16px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem}
+.sec-more{color:var(--or);font-size:.8rem;font-weight:600;background:none;border:none;cursor:pointer;padding:0}
+.divider{height:6px;background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+
+/* QUICK ACTIONS */
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.quick-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;background:none;border:none;padding:0}
+.quick-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.quick-label{font-size:.68rem;font-weight:600;color:var(--text);text-align:center;line-height:1.3}
+
+/* AD CARD (horizontal scroll) */
+.hscroll{display:flex;gap:12px;overflow-x:auto;padding:2px 16px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.ad-card-h{min-width:200px;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;flex-shrink:0}
+.ad-card-img{height:110px;display:flex;align-items:center;justify-content:center;font-size:2.8rem}
+.ad-card-body{padding:10px}
+.ad-cat-tag{font-size:.65rem;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.ad-title-s{font-family:'Nunito',sans-serif;font-weight:800;font-size:.88rem;line-height:1.3;margin-bottom:4px}
+.ad-price-s{font-weight:700;color:var(--or);font-size:.85rem}
+.ad-meta-s{font-size:.7rem;color:var(--muted);margin-top:4px}
+.vip-dot{background:linear-gradient(90deg,#F59E0B,#FCD34D);color:#1E293B;font-size:.6rem;font-weight:800;padding:1px 7px;border-radius:5px;display:inline-block;margin-bottom:4px}
+
+/* LIST CARDS (ads/jobs/orgs full list) */
+.list-wrap{padding:0 16px 8px}
+.list-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:14px;margin-bottom:10px;cursor:pointer;transition:.15s;display:flex;gap:12px;align-items:flex-start}
+.list-card:active{transform:scale(.98)}
+.list-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.list-body{flex:1;min-width:0}
+.list-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:.95rem;line-height:1.3;margin-bottom:3px}
+.list-sub{font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.list-price{font-weight:700;color:var(--or);font-size:.88rem}
+.list-meta{display:flex;gap:10px;font-size:.72rem;color:var(--muted);margin-top:5px;flex-wrap:wrap}
+.list-right{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.rating{color:var(--am);font-weight:700;font-size:.8rem}
+.status-open{color:var(--gr);font-weight:700;font-size:.75rem}
+.status-closed{color:var(--re);font-weight:700;font-size:.75rem}
+.badge-tag{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px}
+
+/* FILTER BAR */
+.filter-bar{padding:10px 16px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:40}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{border:1.5px solid var(--border);background:var(--card);color:var(--muted);padding:5px 13px;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.15s}
+.filter-chip.active{border-color:var(--or);background:var(--or-l);color:var(--or)}
+
+/* SEARCH BOX */
+.search-wrap{padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:40}
+.search-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.9rem;outline:none;font-family:'Inter',sans-serif;background:var(--bg)}
+.search-input:focus{border-color:var(--or)}
+
+/* ORG CATALOG (sidebar-ish scroll) */
+.cat-scroll{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--border)}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-chip{display:flex;align-items:center;gap:5px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.15s}
+.cat-chip.active{border-color:var(--or);background:var(--or-l);color:var(--or)}
+
+/* AUTH */
+.auth-wrap{max-width:400px;margin:0 auto;padding:24px 20px}
+.auth-tabs{display:flex;background:var(--card);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.auth-tab{flex:1;padding:11px;text-align:center;font-weight:700;font-size:.88rem;cursor:pointer;color:var(--muted);border:none;background:none;transition:.15s}
+.auth-tab.active{background:var(--or);color:#fff}
+.auth-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px}
+.field-label{display:block;font-size:.8rem;font-weight:600;margin-bottom:5px;color:var(--text)}
+.field-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.9rem;outline:none;font-family:'Inter',sans-serif;margin-bottom:13px;transition:.15s}
+.field-input:focus{border-color:var(--or)}
+.btn-primary{width:100%;background:var(--or);color:#fff;border:none;padding:13px;border-radius:11px;font-weight:700;font-size:.95rem;cursor:pointer;transition:.15s;font-family:'Inter',sans-serif}
+.btn-primary:active{background:var(--or-d)}
+.btn-secondary{width:100%;background:var(--or-l);color:var(--or);border:none;padding:12px;border-radius:11px;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:8px}
+.error-msg{background:var(--re-l);color:var(--re);padding:10px 13px;border-radius:9px;font-size:.82rem;margin-bottom:12px;display:none}
+.success-msg{background:var(--gr-l);color:var(--gr);padding:10px 13px;border-radius:9px;font-size:.82rem;margin-bottom:12px;display:none}
+
+/* ACCOUNT */
+.account-hero{background:linear-gradient(135deg,#7C2D12,#C2410C);color:#fff;padding:28px 20px 24px;text-align:center}
+.avatar{width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 10px}
+.account-name{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.15rem}
+.account-email{font-size:.8rem;opacity:.8;margin-top:3px}
+.menu-list{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin:16px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left;font-family:'Inter',sans-serif;font-size:.9rem;color:var(--text)}
+.menu-item:last-child{border-bottom:none}
+.menu-item:active{background:var(--bg)}
+.menu-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+
+/* SUBMIT FORM */
+.form-wrap{padding:16px}
+.form-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px}
+.form-section{font-family:'Nunito',sans-serif;font-weight:800;font-size:.9rem;color:var(--or);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+.field-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;margin-bottom:13px;background:var(--bg);appearance:none}
+.field-textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;margin-bottom:13px;resize:vertical;min-height:90px}
+.field-textarea:focus,.field-select:focus{border-color:var(--or)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ADMIN */
+.admin-header{background:linear-gradient(135deg,#1E293B,#334155);color:#fff;padding:20px 16px}
+.admin-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.1rem;margin-bottom:4px}
+.admin-sub{font-size:.78rem;opacity:.7}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px}
+.admin-stat{background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:12px;text-align:center}
+.admin-stat-n{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.3rem;line-height:1}
+.admin-stat-l{font-size:.68rem;color:var(--muted);margin-top:3px}
+.admin-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--card);overflow-x:auto;scrollbar-width:none}
+.admin-tab{padding:11px 16px;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;border:none;background:none;border-bottom:2px solid transparent;transition:.15s}
+.admin-tab.active{color:var(--or);border-bottom-color:var(--or)}
+.pending-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:14px;margin-bottom:10px}
+.pending-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.pending-title{font-family:'Nunito',sans-serif;font-weight:800;font-size:.92rem;line-height:1.3}
+.pending-meta{font-size:.75rem;color:var(--muted);margin-top:3px}
+.pending-actions{display:flex;gap:7px}
+.btn-approve{background:var(--gr-l);color:var(--gr);border:none;padding:6px 14px;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer}
+.btn-reject{background:var(--re-l);color:var(--re);border:none;padding:6px 14px;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer}
+
+/* DETAIL PAGE */
+.detail-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:linear-gradient(135deg,#FFEDD5,#FED7AA)}
+.detail-body{padding:18px 16px}
+.detail-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.2rem;line-height:1.3;margin-bottom:8px}
+.detail-price{font-size:1.2rem;font-weight:700;color:var(--or);margin-bottom:12px}
+.detail-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.detail-row:last-of-type{border-bottom:none}
+.detail-row-label{color:var(--muted);width:100px;flex-shrink:0;font-size:.8rem}
+.detail-content{line-height:1.7;color:var(--text);font-size:.88rem;margin-top:12px}
+.btn-call{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--or);color:#fff;border:none;padding:14px;border-radius:11px;font-weight:700;font-size:.95rem;cursor:pointer;margin-top:16px}
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--or);font-weight:600;font-size:.88rem;cursor:pointer;padding:12px 16px}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nav) + 12px);left:16px;right:16px;background:#1E293B;color:#fff;padding:13px 16px;border-radius:12px;font-size:.85rem;font-weight:500;z-index:200;transform:translateY(80px);opacity:0;transition:.3s;text-align:center}
+.toast.show{transform:none;opacity:1}
+
+/* LOADING */
+.spinner{width:36px;height:36px;border:3px solid var(--or-l);border-top-color:var(--or);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty-state div{font-size:2.5rem;margin-bottom:10px}
+.empty-state p{font-size:.88rem}</style><script type="module">import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, orderBy, serverTimestamp, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ✅ FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyAfUm1YzNbRxzOYclFhr1v1g-xSo6MkN_o",
+  authDomain: "batken-portal.firebaseapp.com",
+  projectId: "batken-portal",
+  storageBucket: "batken-portal.firebasestorage.app",
+  messagingSenderId: "705755102053",
+  appId: "1:705755102053:web:8ce35ad4fffb68ff4c7f8c"
+};
+
+// Админ emailдери (каалаган emailди кошсоңуз болот)
+const ADMIN_EMAILS = ['batkenlist@gmail.com'];
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ─── ГЛОБАЛ STATE ───────────────────────────────────────────
+window._db = db;
+window._auth = auth;
+window._currentUser = null;
+window._prevScreen = 'home';
+window._submitType = 'ad';
+window._allAds = [];
+window._allJobs = [];
+window._allOrgs = [];
+window._adminTab = 'ads';
+
+// ─── AUTH STATE ─────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  window._currentUser = user;
+  if (user) {
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('user-section').style.display = 'block';
+    document.getElementById('user-name').textContent = user.displayName || 'Колдонуучу';
+    document.getElementById('user-email').textContent = user.email;
+    document.getElementById('user-avatar').textContent = (user.displayName||'К')[0].toUpperCase();
+    const isAdmin = ADMIN_EMAILS.includes(user.email);
+    document.getElementById('admin-btn').style.display = isAdmin ? 'flex' : 'none';
+  } else {
+    document.getElementById('auth-section').style.display = 'block';
+    document.getElementById('user-section').style.display = 'none';
+  }
+});
+
+// ─── AUTH ────────────────────────────────────────────────────
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) return showErr('auth-error', 'Бардык талааларды толтуруңуз.');
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    showToast('Кирдиңиз! 👋');
+  } catch(e) {
+    showErr('auth-error', 'Email же сырсөз туура эмес.');
+  }
+};
+
+window.doRegister = async () => {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  if (!name || !email || !pass) return showErr('auth-error', 'Бардык талааларды толтуруңуз.');
+  if (pass.length < 6) return showErr('auth-error', 'Сырсөз кеминде 6 белги болушу керек.');
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    showToast('Каттылдыңыз! 🎉');
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') showErr('auth-error', 'Бул email мурунтан катталган.');
+    else showErr('auth-error', 'Ката кетти: ' + e.message);
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+  showToast('Чыктыңыз');
+};
+
+// ─── LOAD DATA ───────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const aq = query(collection(db,'ads'), where('status','==','approved'));
+    const jq = query(collection(db,'jobs'), where('status','==','approved'));
+    const oq = query(collection(db,'orgs'), where('status','==','approved'));
+    const [a,j,o] = await Promise.all([getCountFromServer(aq),getCountFromServer(jq),getCountFromServer(oq)]);
+    document.getElementById('stat-ads').textContent = a.data().count;
+    document.getElementById('stat-jobs').textContent = j.data().count;
+    document.getElementById('stat-orgs').textContent = o.data().count;
+  } catch(e){}
+}
+
+async function loadAds() {
+  try {
+    const q = query(collection(db,'ads'), where('status','==','approved'), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    window._allAds = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderAds(window._allAds);
+    renderHomeAds(window._allAds.slice(0,6));
+    // Filters
+    const cats = [...new Set(window._allAds.map(a=>a.category).filter(Boolean))];
+    renderFilters('ads-filters', cats, filterAds);
+  } catch(e){ document.getElementById('ads-list').innerHTML = '<div class="empty-state"><div>📋</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>'; }
+}
+
+async function loadJobs() {
+  try {
+    const q = query(collection(db,'jobs'), where('status','==','approved'), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    window._allJobs = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderJobs(window._allJobs);
+    renderHomeJobs(window._allJobs.slice(0,3));
+    const cats = [...new Set(window._allJobs.map(j=>j.category).filter(Boolean))];
+    renderFilters('jobs-filters', cats, filterJobs);
+  } catch(e){ document.getElementById('jobs-list').innerHTML = '<div class="empty-state"><div>💼</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>'; }
+}
+
+async function loadOrgs() {
+  try {
+    const q = query(collection(db,'orgs'), where('status','==','approved'), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    window._allOrgs = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderOrgs(window._allOrgs);
+    const cats = [...new Set(window._allOrgs.map(o=>o.category).filter(Boolean))];
+    renderOrgCats(cats);
+  } catch(e){ document.getElementById('orgs-list').innerHTML = '<div class="empty-state"><div>🏢</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>'; }
+}
+
+// ─── RENDER ──────────────────────────────────────────────────
+function renderHomeAds(ads) {
+  const el = document.getElementById('home-ads-scroll');
+  if (!ads.length) { el.innerHTML = '<div class="empty-state" style="min-width:200px"><div>📋</div><p>Жарнама жок</p></div>'; return; }
+  el.innerHTML = ads.map(a => `
+    <div class="ad-card-h" onclick="showDetail('ad','${a.id}')">
+      <div class="ad-card-img" style="background:linear-gradient(135deg,#FFEDD5,#FED7AA)">${a.emoji||'📦'}</div>
+      <div class="ad-card-body">
+        ${a.vip?'<div class="vip-dot">⭐ VIP</div>':''}
+        <div class="ad-cat-tag">${a.category||''}</div>
+        <div class="ad-title-s">${a.title}</div>
+        ${a.price?`<div class="ad-price-s">${a.price}</div>`:''}
+        <div class="ad-meta-s">📍 ${a.location||'Баткен'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderHomeJobs(jobs) {
+  const el = document.getElementById('home-jobs-list');
+  if (!jobs.length) { el.innerHTML = '<div class="empty-state"><div>💼</div><p>Вакансия жок</p></div>'; return; }
+  el.innerHTML = jobs.map(j => `
+    <div class="list-card" onclick="showDetail('job','${j.id}')">
+      <div class="list-icon" style="background:var(--gr-l)">${j.emoji||'💼'}</div>
+      <div class="list-body">
+        <div class="list-title">${j.title}</div>
+        <div class="list-sub">${j.company||''}</div>
+        ${j.salary?`<div class="list-price">💰 ${j.salary}</div>`:''}
+        <div class="list-meta"><span>📍 ${j.location||'Баткен'}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAds(ads) {
+  const el = document.getElementById('ads-list');
+  if (!ads.length) { el.innerHTML = '<div class="empty-state"><div>📋</div><p>Жарнама табылган жок</p></div>'; return; }
+  el.innerHTML = ads.map(a => `
+    <div class="list-card" onclick="showDetail('ad','${a.id}')">
+      <div class="list-icon" style="background:var(--or-l)">${a.emoji||'📦'}</div>
+      <div class="list-body">
+        ${a.vip?'<div class="vip-dot" style="margin-bottom:5px">⭐ VIP</div>':''}
+        <div class="list-title">${a.title}</div>
+        <div class="list-sub">${a.category||''}</div>
+        ${a.price?`<div class="list-price">${a.price}</div>`:''}
+        <div class="list-meta"><span>📍 ${a.location||'Баткен'}</span><span>${timeAgo(a.createdAt)}</span></div>
+      </div>
+    </div>`).join('');
+}
+
+function renderJobs(jobs) {
+  const el = document.getElementById('jobs-list');
+  if (!jobs.length) { el.innerHTML = '<div class="empty-state"><div>💼</div><p>Вакансия табылган жок</p></div>'; return; }
+  el.innerHTML = jobs.map(j => `
+    <div class="list-card" onclick="showDetail('job','${j.id}')">
+      <div class="list-icon" style="background:var(--gr-l)">${j.emoji||'💼'}</div>
+      <div class="list-body">
+        <div class="list-title">${j.title}</div>
+        <div class="list-sub">${j.company||''}</div>
+        ${j.salary?`<div class="list-price">💰 ${j.salary}</div>`:''}
+        <div class="list-meta">
+          <span class="badge-tag" style="background:var(--or-l);color:var(--or)">${j.jobType||'Толук күн'}</span>
+          <span class="badge-tag" style="background:var(--gr-l);color:var(--gr)">${j.category||''}</span>
+        </div>
+      </div>
+      <div class="list-right"><span style="font-size:.72rem;color:var(--muted)">${timeAgo(j.createdAt)}</span></div>
+    </div>`).join('');
+}
+
+function renderOrgs(orgs) {
+  const el = document.getElementById('orgs-list');
+  if (!orgs.length) { el.innerHTML = '<div class="empty-state"><div>🏢</div><p>Уюм табылган жок</p></div>'; return; }
+  el.innerHTML = orgs.map(o => {
+    const open = isOpen(o.hours, o.open24);
+    return `
+    <div class="list-card" onclick="showDetail('org','${o.id}')">
+      <div class="list-icon" style="background:var(--or-l)">${o.emoji||'🏢'}</div>
+      <div class="list-body">
+        ${o.vip?'<div class="vip-dot" style="margin-bottom:5px">⭐ VIP</div>':''}
+        <div class="list-title">${o.title}</div>
+        <div class="list-sub">${o.category||''}</div>
+        <div class="list-meta">
+          ${o.phone?`<span>📞 ${o.phone}</span>`:''}
+          ${o.address?`<span>📍 ${o.address}</span>`:''}
+        </div>
+      </div>
+      <div class="list-right">
+        ${o.rating?`<div class="rating">⭐ ${o.rating}</div>`:''}
+        <div class="${open?'status-open':'status-closed'}">● ${open?'Ачык':'Жабык'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFilters(containerId, cats, filterFn) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = `<button class="filter-chip active" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');${filterFn.name}()">Баары</button>` +
+    cats.map(c => `<button class="filter-chip" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');${filterFn.name}('${c}')">${c}</button>`).join('');
+}
+
+function renderOrgCats(cats) {
+  const el = document.getElementById('org-cats');
+  el.innerHTML = `<div class="cat-chip active" onclick="document.querySelectorAll('.cat-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterOrgs()">🏢 Баары</div>` +
+    cats.map(c => `<div class="cat-chip" onclick="document.querySelectorAll('.cat-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterOrgs('${c}')">${c}</div>`).join('');
+}
+
+// ─── FILTER ──────────────────────────────────────────────────
+window.filterAds = (cat) => {
+  const s = document.getElementById('ads-search').value.toLowerCase();
+  let arr = window._allAds;
+  if (cat) arr = arr.filter(a => a.category === cat);
+  if (s) arr = arr.filter(a => a.title.toLowerCase().includes(s) || (a.location||'').toLowerCase().includes(s));
+  renderAds(arr);
+};
+window.filterJobs = (cat) => {
+  const s = document.getElementById('jobs-search').value.toLowerCase();
+  let arr = window._allJobs;
+  if (cat) arr = arr.filter(j => j.category === cat);
+  if (s) arr = arr.filter(j => j.title.toLowerCase().includes(s) || (j.company||'').toLowerCase().includes(s));
+  renderJobs(arr);
+};
+window.filterOrgs = (cat) => {
+  const s = document.getElementById('orgs-search').value.toLowerCase();
+  let arr = window._allOrgs;
+  if (cat) arr = arr.filter(o => o.category === cat);
+  if (s) arr = arr.filter(o => o.title.toLowerCase().includes(s) || (o.address||'').toLowerCase().includes(s));
+  renderOrgs(arr);
+};
+
+// ─── DETAIL ──────────────────────────────────────────────────
+window.showDetail = (type, id) => {
+  window._prevScreen = document.querySelector('.screen.active').id.replace('screen-','');
+  const item = (type==='ad'?window._allAds:type==='job'?window._allJobs:window._allOrgs).find(x=>x.id===id);
+  if (!item) return;
+  const el = document.getElementById('detail-content');
+  if (type === 'ad') {
+    el.innerHTML = `
+      <div class="detail-img">${item.emoji||'📦'}</div>
+      <div class="detail-body">
+        ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP жарнама</div>':''}
+        <div class="detail-title">${item.title}</div>
+        ${item.price?`<div class="detail-price">${item.price}</div>`:''}
+        <div class="detail-row"><span class="detail-row-label">📍 Жайгашкан жери</span><span>${item.location||'Баткен'}</span></div>
+        <div class="detail-row"><span class="detail-row-label">🗂 Категория</span><span>${item.category||'—'}</span></div>
+        <div class="detail-row"><span class="detail-row-label">📅 Дата</span><span>${timeAgo(item.createdAt)}</span></div>
+        ${item.description?`<div class="detail-content">${item.description}</div>`:''}
+        ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'">📞 ${item.phone}</button>`:''}
+      </div>`;
+  } else if (type === 'job') {
+    el.innerHTML = `
+      <div class="detail-img" style="background:linear-gradient(135deg,var(--gr-l),#86EFAC)">${item.emoji||'💼'}</div>
+      <div class="detail-body">
+        <div class="detail-title">${item.title}</div>
+        <div style="color:var(--muted);font-size:.88rem;margin-bottom:12px">${item.company||''}</div>
+        ${item.salary?`<div class="detail-price">💰 ${item.salary}</div>`:''}
+        <div class="detail-row"><span class="detail-row-label">📍 Жайгашкан жери</span><span>${item.location||'Баткен'}</span></div>
+        <div class="detail-row"><span class="detail-row-label">⚙️ Режим</span><span>${item.jobType||'Толук күн'}</span></div>
+        <div class="detail-row"><span class="detail-row-label">🗂 Тармак</span><span>${item.category||'—'}</span></div>
+        ${item.phone?`<div class="detail-row"><span class="detail-row-label">📞 Телефон</span><span>${item.phone}</span></div>`:''}
+        ${item.description?`<div class="detail-content">${item.description}</div>`:''}
+        ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'">📞 Байланышуу</button>`:''}
+      </div>`;
+  } else {
+    const open = isOpen(item.hours, item.open24);
+    el.innerHTML = `
+      <div class="detail-img" style="background:linear-gradient(135deg,var(--pu-l),#C4B5FD)">${item.emoji||'🏢'}</div>
+      <div class="detail-body">
+        ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP уюм</div>':''}
+        <div class="detail-title">${item.title}</div>
+        ${item.rating?`<div style="margin-bottom:10px"><span class="rating">⭐ ${item.rating}</span> <span style="color:var(--muted);font-size:.8rem">(${item.reviews||0} пикир)</span></div>`:''}
+        ${item.phone?`<div class="detail-row"><span class="detail-row-label">📞 Телефон</span><span>${item.phone}</span></div>`:''}
+        ${item.address?`<div class="detail-row"><span class="detail-row-label">📍 Дарек</span><span>${item.address}</span></div>`:''}
+        <div class="detail-row"><span class="detail-row-label">🕐 Иш убактысы</span><span class="${open?'status-open':'status-closed'}">● ${item.open24?'24/7':(item.hours||'—')} — ${open?'Ачык':'Жабык'}</span></div>
+        ${item.website?`<div class="detail-row"><span class="detail-row-label">🌐 Сайт</span><a href="${item.website}" target="_blank" style="color:var(--or)">${item.website}</a></div>`:''}
+        ${item.description?`<div class="detail-content">${item.description}</div>`:''}
+        ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'">📞 Чалуу</button>`:''}
+      </div>`;
+  }
+  goScreen('detail');
+};
+
+// ─── SUBMIT ──────────────────────────────────────────────────
+window.goSubmit = (type) => {
+  if (!window._currentUser) { goScreen('account'); showToast('Алгач кириңиз'); return; }
+  window._submitType = type;
+  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Уюм кошуу'};
+  document.getElementById('submit-title').textContent = titles[type];
+  document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
+  document.getElementById('submit-error').style.display = 'none';
+  goScreen('submit');
+};
+
+function getFormHTML(type) {
+  if (type === 'ad') return `
+    <div class="form-section">Негизги маалымат</div>
+    <label class="field-label">Аталышы *</label>
+    <input class="field-input" id="f-title" placeholder="мис: 3 бөлмөлүү батир сатылат">
+    <label class="field-label">Баасы</label>
+    <input class="field-input" id="f-price" placeholder="мис: 850 000 сом">
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Категория</label>
+        <select class="field-select" id="f-cat">
+          <option value="">— Тандаңыз —</option>
+          <option>Кыймылсыз мүлк</option><option>Унаалар</option>
+          <option>Электроника</option><option>Кийим</option>
+          <option>Айыл чарба</option><option>Кызматтар</option><option>Башка</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Эмодзи</label>
+        <input class="field-input" id="f-emoji" value="📦" style="text-align:center;font-size:1.3rem">
+      </div>
+    </div>
+    <label class="field-label">Жайгашкан жери</label>
+    <input class="field-input" id="f-location" placeholder="мис: Баткен борбору">
+    <label class="field-label">Телефон</label>
+    <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">Сүрөттөмө</label>
+    <textarea class="field-textarea" id="f-desc" placeholder="Кошумча маалымат..."></textarea>`;
+
+  if (type === 'job') return `
+    <div class="form-section">Вакансия маалыматы</div>
+    <label class="field-label">Кызмат орду *</label>
+    <input class="field-input" id="f-title" placeholder="мис: Математика мугалими">
+    <label class="field-label">Компания / Мекеме *</label>
+    <input class="field-input" id="f-company" placeholder="мис: №3 Орто мектеп">
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Маяна</label>
+        <input class="field-input" id="f-salary" placeholder="20 000 сом">
+      </div>
+      <div>
+        <label class="field-label">Эмодзи</label>
+        <input class="field-input" id="f-emoji" value="💼" style="text-align:center;font-size:1.3rem">
+      </div>
+    </div>
+    <label class="field-label">Тармак</label>
+    <select class="field-select" id="f-cat">
+      <option value="">— Тандаңыз —</option>
+      <option>Медицина</option><option>Билим берүү</option><option>Курулуш</option>
+      <option>Айыл чарба</option><option>Соода</option><option>IT</option><option>Башка</option>
+    </select>
+    <label class="field-label">Иш режими</label>
+    <select class="field-select" id="f-jobtype">
+      <option>Толук күн</option><option>Жарым күн</option>
+      <option>Алыстан</option><option>Убактылуу</option>
+    </select>
+    <label class="field-label">Жайгашкан жери</label>
+    <input class="field-input" id="f-location" placeholder="мис: Баткен">
+    <label class="field-label">Байланыш телефону</label>
+    <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">Сүрөттөмө / Талаптар</label>
+    <textarea class="field-textarea" id="f-desc" placeholder="Талаптар, шарттар..."></textarea>`;
+
+  return `
+    <div class="form-section">Уюм маалыматы</div>
+    <label class="field-label">Уюмдун аты *</label>
+    <input class="field-input" id="f-title" placeholder="мис: Кафе Ала-Тоо">
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Категория</label>
+        <select class="field-select" id="f-cat">
+          <option value="">— Тандаңыз —</option>
+          <option>Медицина</option><option>Билим берүү</option><option>Соода</option>
+          <option>Тамак-аш</option><option>Курулуш</option><option>Сулуулук</option>
+          <option>Банктар</option><option>Мамлекеттик</option><option>Башка</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Эмодзи</label>
+        <input class="field-input" id="f-emoji" value="🏢" style="text-align:center;font-size:1.3rem">
+      </div>
+    </div>
+    <label class="field-label">Телефон</label>
+    <input class="field-input" id="f-phone" type="tel" placeholder="0362 2-22-33">
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Иш убактысы</label>
+        <input class="field-input" id="f-hours" placeholder="08:00–17:00">
+      </div>
+      <div>
+        <label class="field-label">Дарек</label>
+        <input class="field-input" id="f-address" placeholder="Ленин көч., 45">
+      </div>
+    </div>
+    <label class="field-label">Веб-сайт (милдеттүү эмес)</label>
+    <input class="field-input" id="f-website" type="url" placeholder="https://...">
+    <label class="field-label">Сүрөттөмө</label>
+    <textarea class="field-textarea" id="f-desc" placeholder="Уюм жөнүндө кыскача..."></textarea>`;
+}
+
+window.doSubmit = async () => {
+  const type = window._submitType;
+  const title = document.getElementById('f-title')?.value.trim();
+  if (!title) return showErr('submit-error', 'Аталышын жазыңыз.');
+  if (!window._currentUser) return showErr('submit-error', 'Алгач кириңиз.');
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Жиберилүүдө...'; btn.disabled = true;
+
+  try {
+    const base = {
+      title, status: 'pending',
+      authorId: window._currentUser.uid,
+      authorEmail: window._currentUser.email,
+      authorName: window._currentUser.displayName || '',
+      createdAt: serverTimestamp(),
+      emoji: document.getElementById('f-emoji')?.value || '',
+      category: document.getElementById('f-cat')?.value || '',
+      description: document.getElementById('f-desc')?.value || '',
+      phone: document.getElementById('f-phone')?.value || '',
+      location: document.getElementById('f-location')?.value || '',
+    };
+
+    let colName = 'ads';
+    if (type === 'ad') {
+      base.price = document.getElementById('f-price')?.value || '';
+    } else if (type === 'job') {
+      colName = 'jobs';
+      base.company = document.getElementById('f-company')?.value || '';
+      base.salary = document.getElementById('f-salary')?.value || '';
+      base.jobType = document.getElementById('f-jobtype')?.value || '';
+    } else {
+      colName = 'orgs';
+      base.hours = document.getElementById('f-hours')?.value || '';
+      base.address = document.getElementById('f-address')?.value || '';
+      base.website = document.getElementById('f-website')?.value || '';
+      base.rating = 0; base.reviews = 0; base.vip = false;
+    }
+
+    await addDoc(collection(db, colName), base);
+    showToast('✅ Жиберилди! Модератор текшерет.');
+    goScreen('home');
+  } catch(e) {
+    showErr('submit-error', 'Ката кетти: ' + e.message);
+  } finally {
+    btn.textContent = 'Жиберүү'; btn.disabled = false;
+  }
+};
+
+// ─── ADMIN ───────────────────────────────────────────────────
+window.switchAdminTab = (tab) => {
+  window._adminTab = tab;
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('atab-'+tab).classList.add('active');
+  loadAdminList();
+};
+
+async function loadAdminPanel() {
+  try {
+    const cols = ['ads','jobs','orgs'];
+    const [pending, approved, rejected] = await Promise.all([
+      Promise.all(cols.map(c => getCountFromServer(query(collection(db,c),where('status','==','pending'))))),
+      Promise.all(cols.map(c => getCountFromServer(query(collection(db,c),where('status','==','approved'))))),
+      Promise.all(cols.map(c => getCountFromServer(query(collection(db,c),where('status','==','rejected')))))
+    ]);
+    document.getElementById('adm-pending').textContent = pending.reduce((s,r)=>s+r.data().count,0);
+    document.getElementById('adm-approved').textContent = approved.reduce((s,r)=>s+r.data().count,0);
+    document.getElementById('adm-rejected').textContent = rejected.reduce((s,r)=>s+r.data().count,0);
+  } catch(e){}
+  loadAdminList();
+}
+
+async function loadAdminList() {
+  const el = document.getElementById('admin-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  const colMap = {ads:'ads', jobs:'jobs', orgs:'orgs'};
+  const col = colMap[window._adminTab];
+  try {
+    const q = query(collection(db,col), where('status','==','pending'), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    if (snap.empty) { el.innerHTML = '<div class="empty-state"><div>✅</div><p>Текшерүүдө жарыя жок</p></div>'; return; }
+    el.innerHTML = snap.docs.map(d => {
+      const it = d.data();
+      return `<div class="pending-card">
+        <div class="pending-card-hdr">
+          <div>
+            <div class="pending-title">${it.title}</div>
+            <div class="pending-meta">👤 ${it.authorName||it.authorEmail} · ${timeAgo(it.createdAt)}</div>
+            ${it.price?`<div style="color:var(--or);font-weight:700;font-size:.85rem;margin-top:4px">${it.price}</div>`:''}
+            ${it.salary?`<div style="color:var(--gr);font-weight:700;font-size:.85rem;margin-top:4px">💰 ${it.salary}</div>`:''}
+            ${it.phone?`<div style="font-size:.8rem;color:var(--muted);margin-top:3px">📞 ${it.phone}</div>`:''}
+          </div>
+          <div style="font-size:1.5rem">${it.emoji||'📄'}</div>
+        </div>
+        ${it.description?`<div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;line-height:1.5">${it.description.slice(0,120)}${it.description.length>120?'...':''}</div>`:''}
+        <div class="pending-actions">
+          <button class="btn-approve" onclick="adminAction('${col}','${d.id}','approved')">✅ Бекитүү</button>
+          <button class="btn-reject" onclick="adminAction('${col}','${d.id}','rejected')">❌ Четке кагуу</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty-state"><div>⚠️</div><p>Жүктөөдө ката кетти</p></div>'; }
+}
+
+window.adminAction = async (col, id, status) => {
+  try {
+    await updateDoc(doc(db, col, id), { status });
+    showToast(status === 'approved' ? '✅ Бекитилди!' : '❌ Четке кагылды');
+    loadAdminPanel();
+    // Refresh public lists
+    if (col==='ads') loadAds();
+    else if (col==='jobs') loadJobs();
+    else loadOrgs();
+  } catch(e) { showToast('Ката кетти'); }
+};
+
+// ─── SEARCH ──────────────────────────────────────────────────
+window.doSearch = () => {
+  const s = document.getElementById('home-search').value.toLowerCase().trim();
+  if (!s) return;
+  goScreen('ads');
+  setTimeout(() => {
+    document.getElementById('ads-search').value = s;
+    filterAds();
+  }, 100);
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function timeAgo(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 3600) return Math.floor(diff/60) + ' мүн мурун';
+  if (diff < 86400) return Math.floor(diff/3600) + ' саат мурун';
+  return Math.floor(diff/86400) + ' күн мурун';
+}
+
+function isOpen(hours, open24) {
+  if (open24) return true;
+  if (!hours || !hours.includes('–')) return true;
+  const [s, e] = hours.split('–').map(t => {
+    const [h,m] = t.trim().split(':').map(Number);
+    return h * 60 + (m||0);
+  });
+  const now = new Date();
+  const cur = now.getHours() * 60 + now.getMinutes();
+  return cur >= s && cur <= e;
+}
+
+window.showErr = (id, msg) => {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.style.display = 'block';
+};
+
+window.showToast = (msg) => {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+};
+
+window.goMyPosts = () => showToast('Жакында кошулат 🔜');
+
+// ─── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadStats();
+  loadAds();
+  loadJobs();
+  loadOrgs();
+});
+
+window.addEventListener('screen-change', (e) => {
+  if (e.detail === 'admin') loadAdminPanel();
+});
+</script>
+
+<script>
+// ─── NAVIGATION (module эмес, глобал) ────────────────────────
+const navScreens = ['home','ads','jobs','catalog','account'];
+
+window.goScreen = (name) => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-'+name)?.classList.add('active');
+  if (navScreens.includes(name)) {
+    document.getElementById('nav-'+name)?.classList.add('active');
+  }
+  document.getElementById('app').scrollTo(0,0);
+  window.dispatchEvent(new CustomEvent('screen-change', {detail:name}));
+};
+
+window.goBack = () => window.goScreen(window._prevScreen || 'home');
+
+window.switchAuthTab = (tab) => {
+  document.getElementById('login-form').style.display = tab==='login'?'block':'none';
+  document.getElementById('register-form').style.display = tab==='register'?'block':'none';
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('auth-error').style.display = 'none';
+};
+</script></html>
