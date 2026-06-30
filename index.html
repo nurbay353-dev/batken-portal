@@ -159,9 +159,6 @@
        <input class="field-input" type="email" id="login-email" placeholder="siz@email.com">
        <label class="field-label">Сырсөз</label>
        <input class="field-input" type="password" id="login-pass" placeholder="••••••">
-       <div style="text-align:right;margin:-8px 0 12px">
-         <button onclick="doForgotPassword()" style="background:none;border:none;color:var(--or);font-size:.8rem;font-weight:600;cursor:pointer;padding:0">Сырсөздү унуттумбу?</button>
-       </div>
        <button class="btn-primary" onclick="doLogin()">Кирүү</button>
       </div>
       <div id="register-form" style="display:none">
@@ -264,37 +261,10 @@ Admin панели
    <div class="admin-tabs">
     <button class="admin-tab active" onclick="switchAdminTab('ads')" id="atab-ads">📋 Жарнамалар</button>
     <button class="admin-tab" onclick="switchAdminTab('jobs')" id="atab-jobs">💼 Жумуш</button>
-    <button class="admin-tab" onclick="switchAdminTab('orgs')" id="atab-orgs">🏢 Ишканалар</button>
-    <button class="admin-tab" onclick="switchAdminTab('cats')" id="atab-cats">🗂 Категориялар</button>
+    <button class="admin-tab" onclick="switchAdminTab('orgs')" id="atab-orgs">🏢 Уюмдар</button>
    </div>
    <div class="list-wrap" style="padding-top:12px" id="admin-list">
     <div class="spinner"></div>
-   </div>
-   <!-- CATEGORY PANEL -->
-   <div id="admin-cats-panel" style="display:none;padding:16px">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
-     <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px;text-align:center;cursor:pointer;border:2px solid var(--or)" onclick="selectCatType('ads')">
-      <div style="font-size:1.3rem">📋</div>
-      <div style="font-size:.78rem;font-weight:700;margin-top:4px;color:var(--or)">Жарнама</div>
-     </div>
-     <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px;text-align:center;cursor:pointer" onclick="selectCatType('jobs')" id="cat-type-jobs">
-      <div style="font-size:1.3rem">💼</div>
-      <div style="font-size:.78rem;font-weight:700;margin-top:4px;color:var(--muted)">Жумуш</div>
-     </div>
-     <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:14px;text-align:center;cursor:pointer" onclick="selectCatType('orgs')" id="cat-type-orgs">
-      <div style="font-size:1.3rem">🏢</div>
-      <div style="font-size:.78rem;font-weight:700;margin-top:4px;color:var(--muted)">Ишкана</div>
-     </div>
-    </div>
-    <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:16px;margin-bottom:14px">
-     <label class="field-label">Жаңы категория кошуу</label>
-     <div style="display:flex;gap:8px">
-      <input class="field-input" id="new-cat-name" placeholder="мис: Медицина" style="margin:0;flex:1">
-      <input class="field-input" id="new-cat-emoji" placeholder="🏥" style="margin:0;width:60px;text-align:center">
-      <button onclick="addCategory()" style="background:var(--or);color:#fff;border:none;padding:0 16px;border-radius:10px;font-weight:700;cursor:pointer;white-space:nowrap">+ Кошуу</button>
-     </div>
-    </div>
-    <div id="cats-list"><div class="spinner"></div></div>
    </div>
   </div>
  </div>
@@ -513,8 +483,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .empty-state{text-align:center;padding:48px 20px;color:var(--muted)}
 .empty-state div{font-size:2.5rem;margin-bottom:10px}
 .empty-state p{font-size:.88rem}</style><script type="module">import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, serverTimestamp, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, orderBy, serverTimestamp, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ✅ FIREBASE CONFIG
 const firebaseConfig = {
@@ -526,7 +496,7 @@ const firebaseConfig = {
   appId: "1:705755102053:web:8ce35ad4fffb68ff4c7f8c"
 };
 
-// Админ emailдери
+// Админ emailдери (каалаган emailди кошсоңуз болот)
 const ADMIN_EMAILS = ['batkenlist@gmail.com'];
 
 const app = initializeApp(firebaseConfig);
@@ -593,23 +563,6 @@ window.doRegister = async () => {
 window.doLogout = async () => {
   await signOut(auth);
   showToast('Чыктыңыз');
-};
-
-window.doForgotPassword = async () => {
-  const email = document.getElementById('login-email').value.trim();
-  if (!email) {
-    showErr('auth-error', 'Emailиңизди жазып, андан кийин "Сырсөздү унуттумбу?" басыңыз.');
-    return;
-  }
-  try {
-    await sendPasswordResetEmail(auth, email);
-    document.getElementById('auth-error').style.display = 'none';
-    document.getElementById('auth-success').textContent = '✅ ' + email + ' дарегине сырсөздү калыбына келтирүү шилтемеси жөнөтүлдү. Почтаңызды текшериңиз.';
-    document.getElementById('auth-success').style.display = 'block';
-  } catch(e) {
-    if (e.code === 'auth/user-not-found') showErr('auth-error', 'Бул email менен катталган колдонуучу жок.');
-    else showErr('auth-error', 'Ката кетти: ' + e.message);
-  }
 };
 
 // ─── LOAD DATA ───────────────────────────────────────────────
@@ -841,21 +794,13 @@ window.showDetail = (type, id) => {
 };
 
 // ─── SUBMIT ──────────────────────────────────────────────────
-window.goSubmit = async (type) => {
+window.goSubmit = (type) => {
   if (!window._currentUser) { goScreen('account'); showToast('Алгач кириңиз'); return; }
   window._submitType = type;
-  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу'};
+  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Уюм кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
   document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
   document.getElementById('submit-error').style.display = 'none';
-  // Firebase'ден категорияларды жүктөйбүз
-  const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : 'orgs';
-  const cats = await loadCatsForForm(catType);
-  const sel = document.getElementById('f-cat');
-  if (sel && cats.length) {
-    sel.innerHTML = '<option value="">— Категория тандаңыз —</option>' +
-      cats.map(c => `<option value="${c.name}">${c.emoji||''} ${c.name}</option>`).join('');
-  }
   goScreen('submit');
 };
 
@@ -1009,87 +954,12 @@ window.doSubmit = async () => {
 };
 
 // ─── ADMIN ───────────────────────────────────────────────────
-window._catType = 'ads';
-
 window.switchAdminTab = (tab) => {
   window._adminTab = tab;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('atab-'+tab)?.classList.add('active');
-  if (tab === 'cats') {
-    document.getElementById('admin-list').style.display = 'none';
-    document.getElementById('admin-cats-panel').style.display = 'block';
-    loadCats();
-  } else {
-    document.getElementById('admin-list').style.display = 'block';
-    document.getElementById('admin-cats-panel').style.display = 'none';
-    loadAdminList();
-  }
+  document.getElementById('atab-'+tab).classList.add('active');
+  loadAdminList();
 };
-
-window.selectCatType = (type) => {
-  window._catType = type;
-  ['ads','jobs','orgs'].forEach(t => {
-    const el = document.getElementById('cat-type-' + t);
-    if (el) el.style.border = '2px solid var(--border)';
-    if (el) el.querySelector('div:last-child').style.color = 'var(--muted)';
-  });
-  const active = document.getElementById('cat-type-' + type);
-  if (active) { active.style.border = '2px solid var(--or)'; active.querySelector('div:last-child').style.color = 'var(--or)'; }
-  loadCats();
-};
-
-async function loadCats() {
-  const el = document.getElementById('cats-list');
-  el.innerHTML = '<div class="spinner"></div>';
-  try {
-    const snap = await getDocs(collection(db, 'categories_' + window._catType));
-    const cats = snap.docs.map(d => ({id:d.id, ...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
-    if (!cats.length) { el.innerHTML = '<div class="empty-state"><div>🗂</div><p>Категория жок — биринчисин кошуңуз!</p></div>'; return; }
-    el.innerHTML = cats.map(c => `
-      <div style="background:var(--card);border-radius:12px;box-shadow:var(--sh);padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.3rem">${c.emoji||'📁'}</span>
-        <span style="flex:1;font-weight:600">${c.name}</span>
-        <button onclick="deleteCat('${c.id}')" style="background:var(--re-l);color:var(--re);border:none;padding:5px 12px;border-radius:8px;font-weight:700;font-size:.78rem;cursor:pointer">Өчүрүү</button>
-      </div>`).join('');
-  } catch(e) { el.innerHTML = '<div class="empty-state"><div>⚠️</div><p>Жүктөөдө ката кетти</p></div>'; }
-}
-
-window.addCategory = async () => {
-  const name = document.getElementById('new-cat-name').value.trim();
-  const emoji = document.getElementById('new-cat-emoji').value.trim() || '📁';
-  if (!name) { showToast('Категориянын атын жазыңыз'); return; }
-  try {
-    await addDoc(collection(db, 'categories_' + window._catType), { name, emoji, createdAt: serverTimestamp() });
-    document.getElementById('new-cat-name').value = '';
-    document.getElementById('new-cat-emoji').value = '';
-    showToast('✅ Категория кошулду!');
-    loadCats();
-    // Кэшти тазалайбыз — форма ачылганда жаңы тизме жүктөлсүн
-    window._cats = {};
-  } catch(e) { showToast('Ката кетти'); }
-};
-
-window.deleteCat = async (id) => {
-  if (!confirm('Бул категорияны өчүрөсүзбү?')) return;
-  try {
-    await deleteDoc(doc(db, 'categories_' + window._catType, id));
-    showToast('Өчүрүлдү');
-    loadCats();
-    window._cats = {};
-  } catch(e) { showToast('Ката кетти'); }
-};
-
-// Форма үчүн категорияларды Firebase'ден жүктөө
-window._cats = {};
-async function loadCatsForForm(type) {
-  if (window._cats[type]) return window._cats[type];
-  try {
-    const snap = await getDocs(collection(db, 'categories_' + type));
-    const cats = snap.docs.map(d => d.data()).sort((a,b) => a.name.localeCompare(b.name));
-    window._cats[type] = cats;
-    return cats;
-  } catch(e) { return []; }
-}
 
 async function loadAdminPanel() {
   try {
@@ -1210,7 +1080,7 @@ window.addEventListener('screen-change', (e) => {
 </script>
 
 <script>
-// ─── NAVIGATION (глобал) ──────────────────────────────────────
+// ─── NAVIGATION (module эмес, глобал) ────────────────────────
 const navScreens = ['home','ads','jobs','catalog','account'];
 
 window.goScreen = (name) => {
