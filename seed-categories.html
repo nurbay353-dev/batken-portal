@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Категорияларды жүктөө</title>
+<style>
+body{font-family:sans-serif;max-width:600px;margin:40px auto;padding:0 20px;background:#F8FAFC}
+h1{color:#C2410C;margin-bottom:20px}
+.card{background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:24px;margin-bottom:16px}
+.ok{color:#15803D;font-weight:700;margin:6px 0}
+.err{color:#DC2626;font-weight:700;margin:6px 0}
+.info{color:#64748B;margin:4px 0;font-size:.88rem}
+button{background:#C2410C;color:#fff;border:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;margin-top:10px}
+button:disabled{background:#ccc;cursor:default}
+</style>
+</head>
+<body>
+<h1>🌄 Баткен Портал — Категорияларды жүктөө</h1>
+<div class="card">
+  <p>Бул баракты <strong>бир жолу гана</strong> ачыңыз. Бардык категориялар Firebase'ге сакталат.</p>
+  <button id="btn" onclick="seedAll()">▶ Категорияларды жүктөө</button>
+</div>
+<div id="log"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ⚠️ Өзүңүздүн Firebase config'иңизди коюңуз
+const firebaseConfig = {
+  apiKey: "AIzaSyAfUm1YzNbRxzOYclFhr1v1g-xSo6MkN_o",
+  authDomain: "batken-portal.firebaseapp.com",
+  projectId: "batken-portal",
+  storageBucket: "batken-portal.firebasestorage.app",
+  messagingSenderId: "705755102053",
+  appId: "1:705755102053:web:8ce35ad4fffb68ff4c7f8c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ─── ЖАРНАМА КАТЕГОРИЯЛАРЫ ───────────────────────────────────
+const adsCats = [
+  { name: 'Кыймылсыз мүлк', emoji: '🏠' },
+  { name: 'Унаалар', emoji: '🚗' },
+  { name: 'Электроника', emoji: '📱' },
+  { name: 'Кийим жана аяк кийим', emoji: '👔' },
+  { name: 'Айыл чарба', emoji: '🌾' },
+  { name: 'Малчылык', emoji: '🐄' },
+  { name: 'Курулуш материалдары', emoji: '🧱' },
+  { name: 'Эмеректер', emoji: '🛋️' },
+  { name: 'Тамак-аш азыктары', emoji: '🍎' },
+  { name: 'Балдар буюмдары', emoji: '🧸' },
+  { name: 'Спорт товарлары', emoji: '⚽' },
+  { name: 'Кызматтар', emoji: '🔧' },
+  { name: 'Жаныбарлар', emoji: '🐕' },
+  { name: 'Бизнес жана жабдуулар', emoji: '💼' },
+  { name: 'Башка', emoji: '📦' },
+];
+
+// ─── ЖУМУШ КАТЕГОРИЯЛАРЫ ────────────────────────────────────
+const jobsCats = [
+  { name: 'Медицина', emoji: '🏥' },
+  { name: 'Билим берүү', emoji: '🏫' },
+  { name: 'Курулуш', emoji: '🏗️' },
+  { name: 'Айыл чарба', emoji: '🌾' },
+  { name: 'Соода', emoji: '🛍️' },
+  { name: 'Транспорт', emoji: '🚗' },
+  { name: 'Коммуналдык кызматтар', emoji: '💡' },
+  { name: 'Мамлекеттик кызмат', emoji: '🏛️' },
+  { name: 'IT жана технология', emoji: '💻' },
+  { name: 'Тамак-аш жана кафе', emoji: '🍽️' },
+  { name: 'Сулуулук жана саламаттык', emoji: '💈' },
+  { name: 'Коопсуздук', emoji: '🛡️' },
+  { name: 'Бухгалтерия жана финансы', emoji: '💰' },
+  { name: 'Жаш адиске', emoji: '🎓' },
+  { name: 'Башка', emoji: '📋' },
+];
+
+// ─── ИШКАНА КАТЕГОРИЯЛАРЫ ───────────────────────────────────
+const orgsCats = [
+  { name: 'Медицина', emoji: '🏥' },
+  { name: 'Билим берүү', emoji: '🏫' },
+  { name: 'Тамак-аш жана кафе', emoji: '🍽️' },
+  { name: 'Соода дүкөндөр', emoji: '🛍️' },
+  { name: 'Курулуш жана ремонт', emoji: '🏗️' },
+  { name: 'Авто кызматтар', emoji: '🚗' },
+  { name: 'Сулуулук салону', emoji: '💈' },
+  { name: 'Айыл чарба', emoji: '🌾' },
+  { name: 'Мамлекеттик мекемелер', emoji: '🏛️' },
+  { name: 'Банктар жана каржы', emoji: '🏦' },
+  { name: 'Спорт жана фитнес', emoji: '⚽' },
+  { name: 'Мейманкана жана туризм', emoji: '🏨' },
+  { name: 'IT жана байланыш', emoji: '💻' },
+  { name: 'Ремонт жана тейлөө', emoji: '🔧' },
+  { name: 'Башка', emoji: '🏢' },
+];
+
+window.seedAll = async () => {
+  const btn = document.getElementById('btn');
+  const log = document.getElementById('log');
+  btn.disabled = true;
+  btn.textContent = 'Жүктөлүүдө...';
+  log.innerHTML = '';
+
+  const sets = [
+    { col: 'categories_ads',  label: '📋 Жарнама категориялары', data: adsCats },
+    { col: 'categories_jobs', label: '💼 Жумуш категориялары',   data: jobsCats },
+    { col: 'categories_orgs', label: '🏢 Ишкана категориялары',  data: orgsCats },
+  ];
+
+  for (const s of sets) {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `<h3>${s.label}</h3>`;
+    log.appendChild(div);
+
+    // Эскилерин өчүрөбүз
+    try {
+      const snap = await getDocs(collection(db, s.col));
+      for (const d of snap.docs) await deleteDoc(doc(db, s.col, d.id));
+      const p = document.createElement('p');
+      p.className = 'info';
+      p.textContent = `Эски ${snap.size} категория өчүрүлдү`;
+      div.appendChild(p);
+    } catch(e) {}
+
+    // Жаңыларын кошобуз
+    let ok = 0;
+    for (const item of s.data) {
+      try {
+        await addDoc(collection(db, s.col), { ...item, createdAt: serverTimestamp() });
+        const p = document.createElement('p');
+        p.className = 'ok';
+        p.textContent = `✅ ${item.emoji} ${item.name}`;
+        div.appendChild(p);
+        ok++;
+      } catch(e) {
+        const p = document.createElement('p');
+        p.className = 'err';
+        p.textContent = `❌ ${item.name} — ката кетти`;
+        div.appendChild(p);
+      }
+    }
+    const p = document.createElement('p');
+    p.className = 'info';
+    p.textContent = `Жыйынтык: ${ok}/${s.data.length} кошулду`;
+    div.appendChild(p);
+  }
+
+  btn.textContent = '✅ Бүттү!';
+  const fin = document.createElement('div');
+  fin.className = 'card';
+  fin.innerHTML = '<p class="ok" style="font-size:1rem">🎉 Бардык категориялар жүктөлдү! Эми бул файлды өчүрсөңүз болот.</p>';
+  log.appendChild(fin);
+};
+</script>
+</body>
+</html>
