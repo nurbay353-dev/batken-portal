@@ -30,7 +30,7 @@
    <div class="hero">
     <div class="hero-eyebrow">Баткен шаары</div>
     <h1>Шаарыңыз<br><em>бир жерде</em></h1>
-    <p>Жарнамалар, жумуш, ишканалар — баары телефонуңузда</p>
+    <p>Жарнамалар, жумуш, уюмдар — баары телефонуңузда</p>
     <div class="hero-search">
      <input type="text" id="home-search" placeholder="Издөө..." onkeydown="if(event.key==='Enter')doSearch()">
      <button onclick="doSearch()">🔍</button>
@@ -47,7 +47,7 @@
     </div>
     <div class="stat">
      <div class="stat-n" style="color:var(--pu)" id="stat-orgs">—</div>
-     <div class="stat-l">Ишкана</div>
+     <div class="stat-l">Уюм</div>
     </div>
     <div class="stat">
      <div class="stat-n" style="color:var(--am)">75К</div>
@@ -69,7 +69,7 @@
 </button>
      <button class="quick-item" onclick="goScreen('catalog')">
 <div class="quick-icon" style="background:var(--pu-l)">🏢</div>
-<div class="quick-label">Ишканалар</div>
+<div class="quick-label">Уюмдар</div>
 </button>
      <button class="quick-item" onclick="goScreen('account')">
 <div class="quick-icon" style="background:var(--am-l)">👤</div>
@@ -129,7 +129,7 @@
   <!-- ==================== CATALOG ==================== -->
   <div class="screen" id="screen-catalog">
    <div class="top-bar">
-    <div class="top-bar-title">🏢 Ишканалар</div>
+    <div class="top-bar-title">🏢 Уюмдар</div>
     <button onclick="goSubmit('org')" style="background:var(--pu);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Уюм</button>
    </div>
    <div class="search-wrap">
@@ -190,7 +190,7 @@
 </button>
      <button class="menu-item" onclick="goSubmit('org')">
 <div class="menu-icon" style="background:var(--pu-l)">🏢</div>
-Ишкана кошуу
+Уюм кошуу
 </button>
      <button class="menu-item" id="my-posts-btn" onclick="goMyPosts()">
 <div class="menu-icon" style="background:var(--am-l)">📄</div>
@@ -261,7 +261,7 @@ Admin панели
    <div class="admin-tabs">
     <button class="admin-tab active" onclick="switchAdminTab('ads')" id="atab-ads">📋 Жарнамалар</button>
     <button class="admin-tab" onclick="switchAdminTab('jobs')" id="atab-jobs">💼 Жумуш</button>
-    <button class="admin-tab" onclick="switchAdminTab('orgs')" id="atab-orgs">🏢 Ишканалар</button>
+    <button class="admin-tab" onclick="switchAdminTab('orgs')" id="atab-orgs">🏢 Уюмдар</button>
    </div>
    <div class="list-wrap" style="padding-top:12px" id="admin-list">
     <div class="spinner"></div>
@@ -284,7 +284,7 @@ Admin панели
 </button>
   <button class="nav-item" id="nav-catalog" onclick="goScreen('catalog')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-Ишканалар
+Уюмдар
 </button>
   <button class="nav-item" id="nav-account" onclick="goScreen('account')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -580,11 +580,12 @@ async function loadStats() {
 
 async function loadAds() {
   try {
-    const q = query(collection(db,'ads'), where('status','==','approved'));
+    const q = query(collection(db,'ads'), where('status','==','approved'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    window._allAds = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    window._allAds = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderAds(window._allAds);
     renderHomeAds(window._allAds.slice(0,6));
+    // Filters
     const cats = [...new Set(window._allAds.map(a=>a.category).filter(Boolean))];
     renderFilters('ads-filters', cats, filterAds);
   } catch(e){ document.getElementById('ads-list').innerHTML = '<div class="empty-state"><div>📋</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>'; }
@@ -592,9 +593,9 @@ async function loadAds() {
 
 async function loadJobs() {
   try {
-    const q = query(collection(db,'jobs'), where('status','==','approved'));
+    const q = query(collection(db,'jobs'), where('status','==','approved'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    window._allJobs = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    window._allJobs = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderJobs(window._allJobs);
     renderHomeJobs(window._allJobs.slice(0,3));
     const cats = [...new Set(window._allJobs.map(j=>j.category).filter(Boolean))];
@@ -604,9 +605,9 @@ async function loadJobs() {
 
 async function loadOrgs() {
   try {
-    const q = query(collection(db,'orgs'), where('status','==','approved'));
+    const q = query(collection(db,'orgs'), where('status','==','approved'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    window._allOrgs = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    window._allOrgs = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderOrgs(window._allOrgs);
     const cats = [...new Set(window._allOrgs.map(o=>o.category).filter(Boolean))];
     renderOrgCats(cats);
@@ -682,7 +683,7 @@ function renderJobs(jobs) {
 
 function renderOrgs(orgs) {
   const el = document.getElementById('orgs-list');
-  if (!orgs.length) { el.innerHTML = '<div class="empty-state"><div>🏢</div><p>Ишкана табылган жок</p></div>'; return; }
+  if (!orgs.length) { el.innerHTML = '<div class="empty-state"><div>🏢</div><p>Уюм табылган жок</p></div>'; return; }
   el.innerHTML = orgs.map(o => {
     const open = isOpen(o.hours, o.open24);
     return `
@@ -778,7 +779,7 @@ window.showDetail = (type, id) => {
     el.innerHTML = `
       <div class="detail-img" style="background:linear-gradient(135deg,var(--pu-l),#C4B5FD)">${item.emoji||'🏢'}</div>
       <div class="detail-body">
-        ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP ишкана</div>':''}
+        ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP уюм</div>':''}
         <div class="detail-title">${item.title}</div>
         ${item.rating?`<div style="margin-bottom:10px"><span class="rating">⭐ ${item.rating}</span> <span style="color:var(--muted);font-size:.8rem">(${item.reviews||0} пикир)</span></div>`:''}
         ${item.phone?`<div class="detail-row"><span class="detail-row-label">📞 Телефон</span><span>${item.phone}</span></div>`:''}
@@ -796,7 +797,7 @@ window.showDetail = (type, id) => {
 window.goSubmit = (type) => {
   if (!window._currentUser) { goScreen('account'); showToast('Алгач кириңиз'); return; }
   window._submitType = type;
-  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу'};
+  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Уюм кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
   document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
   document.getElementById('submit-error').style.display = 'none';
@@ -867,8 +868,8 @@ function getFormHTML(type) {
     <textarea class="field-textarea" id="f-desc" placeholder="Талаптар, шарттар..."></textarea>`;
 
   return `
-    <div class="form-section">Ишкана маалыматы</div>
-    <label class="field-label">Ишкананын аты *</label>
+    <div class="form-section">Уюм маалыматы</div>
+    <label class="field-label">Уюмдун аты *</label>
     <input class="field-input" id="f-title" placeholder="мис: Кафе Ала-Тоо">
     <div class="grid-2">
       <div>
@@ -900,7 +901,7 @@ function getFormHTML(type) {
     <label class="field-label">Веб-сайт (милдеттүү эмес)</label>
     <input class="field-input" id="f-website" type="url" placeholder="https://...">
     <label class="field-label">Сүрөттөмө</label>
-    <textarea class="field-textarea" id="f-desc" placeholder="Ишкана жөнүндө кыскача..."></textarea>`;
+    <textarea class="field-textarea" id="f-desc" placeholder="Уюм жөнүндө кыскача..."></textarea>`;
 }
 
 window.doSubmit = async () => {
@@ -981,11 +982,10 @@ async function loadAdminList() {
   const colMap = {ads:'ads', jobs:'jobs', orgs:'orgs'};
   const col = colMap[window._adminTab];
   try {
-    const q = query(collection(db,col), where('status','==','pending'));
+    const q = query(collection(db,col), where('status','==','pending'), orderBy('createdAt','desc'));
     const snap = await getDocs(q);
-    const docs = snap.docs.sort((a,b) => (b.data().createdAt?.seconds||0) - (a.data().createdAt?.seconds||0));
     if (snap.empty) { el.innerHTML = '<div class="empty-state"><div>✅</div><p>Текшерүүдө жарыя жок</p></div>'; return; }
-    el.innerHTML = docs.map(d => {
+    el.innerHTML = snap.docs.map(d => {
       const it = d.data();
       return `<div class="pending-card">
         <div class="pending-card-hdr">
