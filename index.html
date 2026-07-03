@@ -566,51 +566,78 @@ window.doLogout = async () => {
 };
 
 // ─── LOAD DATA ───────────────────────────────────────────────
+window._cats = {};
+async function loadCatsForForm(type) {
+  if (window._cats[type]) return window._cats[type];
+  try {
+    const snap = await getDocs(collection(db, 'categories_' + type));
+    const cats = snap.docs.map(d => d.data()).sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    window._cats[type] = cats;
+    return cats;
+  } catch(e) { return []; }
+}
+
 async function loadStats() {
   try {
-    const aq = query(collection(db,'ads'), where('status','==','approved'));
-    const jq = query(collection(db,'jobs'), where('status','==','approved'));
-    const oq = query(collection(db,'orgs'), where('status','==','approved'));
-    const [a,j,o] = await Promise.all([getCountFromServer(aq),getCountFromServer(jq),getCountFromServer(oq)]);
-    document.getElementById('stat-ads').textContent = a.data().count;
-    document.getElementById('stat-jobs').textContent = j.data().count;
-    document.getElementById('stat-orgs').textContent = o.data().count;
+    const [a,j,o] = await Promise.all([
+      getDocs(collection(db,'ads')),
+      getDocs(collection(db,'jobs')),
+      getDocs(collection(db,'orgs'))
+    ]);
+    document.getElementById('stat-ads').textContent = a.docs.filter(d=>d.data().status==='approved').length;
+    document.getElementById('stat-jobs').textContent = j.docs.filter(d=>d.data().status==='approved').length;
+    document.getElementById('stat-orgs').textContent = o.docs.filter(d=>d.data().status==='approved').length;
   } catch(e){}
 }
 
 async function loadAds() {
   try {
-    const q = query(collection(db,'ads'), where('status','==','approved'));
-    const snap = await getDocs(q);
-    window._allAds = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const snap = await getDocs(collection(db,'ads'));
+    window._allAds = snap.docs.map(d => ({id:d.id,...d.data()}))
+      .filter(a => a.status === 'approved')
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderAds(window._allAds);
     renderHomeAds(window._allAds.slice(0,6));
     const cats = [...new Set(window._allAds.map(a=>a.category).filter(Boolean))];
-    renderFilters('ads-filters', cats, filterAds);
-  } catch(e){ document.getElementById('ads-list').innerHTML = '<div class="empty-state"><div>📋</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>'; }
+    await loadCatsForForm('ads');
+    renderFilters('ads-filters', cats, filterAds, 'ads');
+  } catch(e){
+    console.error('loadAds error:',e);
+    document.getElementById('ads-list').innerHTML = '<div class="empty-state"><div>📋</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>';
+  }
 }
 
 async function loadJobs() {
   try {
-    const q = query(collection(db,'jobs'), where('status','==','approved'));
-    const snap = await getDocs(q);
-    window._allJobs = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const snap = await getDocs(collection(db,'jobs'));
+    window._allJobs = snap.docs.map(d => ({id:d.id,...d.data()}))
+      .filter(j => j.status === 'approved')
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderJobs(window._allJobs);
     renderHomeJobs(window._allJobs.slice(0,3));
     const cats = [...new Set(window._allJobs.map(j=>j.category).filter(Boolean))];
-    renderFilters('jobs-filters', cats, filterJobs);
-  } catch(e){ document.getElementById('jobs-list').innerHTML = '<div class="empty-state"><div>💼</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>'; }
+    await loadCatsForForm('jobs');
+    renderFilters('jobs-filters', cats, filterJobs, 'jobs');
+  } catch(e){
+    console.error('loadJobs error:',e);
+    document.getElementById('jobs-list').innerHTML = '<div class="empty-state"><div>💼</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>';
+  }
 }
 
 async function loadOrgs() {
   try {
-    const q = query(collection(db,'orgs'), where('status','==','approved'));
-    const snap = await getDocs(q);
-    window._allOrgs = snap.docs.map(d => ({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    const snap = await getDocs(collection(db,'orgs'));
+    window._allOrgs = snap.docs.map(d => ({id:d.id,...d.data()}))
+      .filter(o => o.status === 'approved')
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderOrgs(window._allOrgs);
     const cats = [...new Set(window._allOrgs.map(o=>o.category).filter(Boolean))];
+    await loadCatsForForm('orgs');
     renderOrgCats(cats);
-  } catch(e){ document.getElementById('orgs-list').innerHTML = '<div class="empty-state"><div>🏢</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>'; }
+  } catch(e){
+    console.error('loadOrgs error:',e);
+    document.getElementById('orgs-list').innerHTML = '<div class="empty-state"><div>🏢</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>';
+  }
 }
 
 // ─── RENDER ──────────────────────────────────────────────────
@@ -705,16 +732,20 @@ function renderOrgs(orgs) {
   }).join('');
 }
 
-function renderFilters(containerId, cats, filterFn) {
+function renderFilters(containerId, cats, filterFn, catType) {
   const el = document.getElementById(containerId);
+  const savedCats = (window._cats && window._cats[catType]) || [];
+  const getEmoji = (name) => { const c = savedCats.find(x=>x.name===name); return c ? c.emoji+' ' : ''; };
   el.innerHTML = `<button class="filter-chip active" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');${filterFn.name}()">Баары</button>` +
-    cats.map(c => `<button class="filter-chip" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');${filterFn.name}('${c}')">${c}</button>`).join('');
+    cats.map(c => `<button class="filter-chip" onclick="this.parentElement.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');${filterFn.name}('${c}')">${getEmoji(c)}${c}</button>`).join('');
 }
 
 function renderOrgCats(cats) {
   const el = document.getElementById('org-cats');
+  const savedCats = (window._cats && window._cats['orgs']) || [];
+  const getEmoji = (name) => { const c = savedCats.find(x=>x.name===name); return c ? c.emoji+' ' : ''; };
   el.innerHTML = `<div class="cat-chip active" onclick="document.querySelectorAll('.cat-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterOrgs()">🏢 Баары</div>` +
-    cats.map(c => `<div class="cat-chip" onclick="document.querySelectorAll('.cat-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterOrgs('${c}')">${c}</div>`).join('');
+    cats.map(c => `<div class="cat-chip" onclick="document.querySelectorAll('.cat-chip').forEach(b=>b.classList.remove('active'));this.classList.add('active');filterOrgs('${c}')">${getEmoji(c)}${c}</div>`).join('');
 }
 
 // ─── FILTER ──────────────────────────────────────────────────
@@ -963,14 +994,11 @@ window.switchAdminTab = (tab) => {
 async function loadAdminPanel() {
   try {
     const cols = ['ads','jobs','orgs'];
-    const [pending, approved, rejected] = await Promise.all([
-      Promise.all(cols.map(c => getCountFromServer(query(collection(db,c),where('status','==','pending'))))),
-      Promise.all(cols.map(c => getCountFromServer(query(collection(db,c),where('status','==','approved'))))),
-      Promise.all(cols.map(c => getCountFromServer(query(collection(db,c),where('status','==','rejected')))))
-    ]);
-    document.getElementById('adm-pending').textContent = pending.reduce((s,r)=>s+r.data().count,0);
-    document.getElementById('adm-approved').textContent = approved.reduce((s,r)=>s+r.data().count,0);
-    document.getElementById('adm-rejected').textContent = rejected.reduce((s,r)=>s+r.data().count,0);
+    const snaps = await Promise.all(cols.map(c => getDocs(collection(db,c))));
+    const allDocs = snaps.flatMap(s => s.docs.map(d => d.data()));
+    document.getElementById('adm-pending').textContent = allDocs.filter(d=>d.status==='pending').length;
+    document.getElementById('adm-approved').textContent = allDocs.filter(d=>d.status==='approved').length;
+    document.getElementById('adm-rejected').textContent = allDocs.filter(d=>d.status==='rejected').length;
   } catch(e){}
   loadAdminList();
 }
@@ -978,13 +1006,13 @@ async function loadAdminPanel() {
 async function loadAdminList() {
   const el = document.getElementById('admin-list');
   el.innerHTML = '<div class="spinner"></div>';
-  const colMap = {ads:'ads', jobs:'jobs', orgs:'orgs'};
-  const col = colMap[window._adminTab];
+  const col = window._adminTab || 'ads';
   try {
-    const q = query(collection(db,col), where('status','==','pending'));
-    const snap = await getDocs(q);
-    const docs = snap.docs.sort((a,b) => (b.data().createdAt?.seconds||0) - (a.data().createdAt?.seconds||0));
-    if (snap.empty) { el.innerHTML = '<div class="empty-state"><div>✅</div><p>Текшерүүдө жарыя жок</p></div>'; return; }
+    const snap = await getDocs(collection(db, col));
+    const docs = snap.docs
+      .filter(d => d.data().status === 'pending')
+      .sort((a,b) => (b.data().createdAt?.seconds||0) - (a.data().createdAt?.seconds||0));
+    if (!docs.length) { el.innerHTML = '<div class="empty-state"><div>✅</div><p>Текшерүүдө жарыя жок</p></div>'; return; }
     el.innerHTML = docs.map(d => {
       const it = d.data();
       return `<div class="pending-card">
