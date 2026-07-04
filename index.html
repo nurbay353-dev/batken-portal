@@ -97,6 +97,16 @@
      <div class="spinner"></div>
     </div>
    </div>
+   <div class="divider"></div>
+   <div class="sec">
+    <div class="sec-hdr">
+     <div class="sec-title">🏢 Акыркы ишканалар</div>
+     <button class="sec-more" onclick="goScreen('catalog')">Баары →</button>
+    </div>
+    <div id="home-orgs-list">
+     <div class="spinner"></div>
+    </div>
+   </div>
   </div>
   <!-- ==================== ADS ==================== -->
   <div class="screen" id="screen-ads">
@@ -631,6 +641,7 @@ async function loadOrgs() {
       .filter(o => o.status === 'approved')
       .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderOrgs(window._allOrgs);
+    renderHomeOrgs(window._allOrgs.slice(0,3));
     const cats = [...new Set(window._allOrgs.map(o=>o.category).filter(Boolean))];
     await loadCatsForForm('orgs');
     renderOrgCats(cats);
@@ -670,6 +681,29 @@ function renderHomeJobs(jobs) {
         <div class="list-meta"><span>📍 ${j.location||'Баткен'}</span></div>
       </div>
     </div>`).join('');
+}
+
+function renderHomeOrgs(orgs) {
+  const el = document.getElementById('home-orgs-list');
+  if (!el) return;
+  if (!orgs.length) { el.innerHTML = '<div class="empty-state"><div>🏢</div><p>Ишкана жок</p></div>'; return; }
+  el.innerHTML = orgs.map(o => {
+    const open = isOpen(o.hours, o.open24);
+    return `
+    <div class="list-card" onclick="showDetail('org','${o.id}')">
+      <div class="list-icon" style="background:var(--or-l)">${o.emoji||'🏢'}</div>
+      <div class="list-body">
+        ${o.vip?'<div class="vip-dot" style="margin-bottom:4px">⭐ VIP</div>':''}
+        <div class="list-title">${o.title}</div>
+        <div class="list-sub">${o.category||''}</div>
+        <div class="list-meta">
+          ${o.phone?`<span>📞 ${o.phone}</span>`:''}
+          <span class="${open?'status-open':'status-closed'}">● ${open?'Ачык':'Жабык'}</span>
+        </div>
+      </div>
+      <div class="list-right">${o.rating?`<div class="rating">⭐ ${o.rating}</div>`:''}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderAds(ads) {
