@@ -858,13 +858,22 @@ window._showDetail = (type, id) => {
 };
 
 // ─── SUBMIT ──────────────────────────────────────────────────
-window._goSubmit = (type) => {
+window._goSubmit = async (type) => {
   if (!window._currentUser) { goScreen('account'); window._showToast('Алгач кириңиз'); return; }
   window._submitType = type;
   const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
   document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
   document.getElementById('submit-error').style.display = 'none';
+  // Кэшти тазалап Firebase'ден жаңы жүктөйбүз
+  const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : 'orgs';
+  delete window._cats[catType];
+  const cats = await loadCatsForForm(catType);
+  const sel = document.getElementById('f-cat');
+  if (sel && cats.length) {
+    sel.innerHTML = '<option value="">— Категория тандаңыз —</option>' +
+      cats.map(c => `<option value="${c.name}">${c.emoji||''} ${c.name}</option>`).join('');
+  }
   goScreen('submit');
 };
 
@@ -879,10 +888,7 @@ function getFormHTML(type) {
       <div>
         <label class="field-label">Категория</label>
         <select class="field-select" id="f-cat">
-          <option value="">— Тандаңыз —</option>
-          <option>Кыймылсыз мүлк</option><option>Унаалар</option>
-          <option>Электроника</option><option>Кийим</option>
-          <option>Айыл чарба</option><option>Кызматтар</option><option>Башка</option>
+          <option value="">— Жүктөлүүдө... —</option>
         </select>
       </div>
       <div>
@@ -915,9 +921,7 @@ function getFormHTML(type) {
     </div>
     <label class="field-label">Тармак</label>
     <select class="field-select" id="f-cat">
-      <option value="">— Тандаңыз —</option>
-      <option>Медицина</option><option>Билим берүү</option><option>Курулуш</option>
-      <option>Айыл чарба</option><option>Соода</option><option>IT</option><option>Башка</option>
+      <option value="">— Жүктөлүүдө... —</option>
     </select>
     <label class="field-label">Иш режими</label>
     <select class="field-select" id="f-jobtype">
@@ -939,10 +943,7 @@ function getFormHTML(type) {
       <div>
         <label class="field-label">Категория</label>
         <select class="field-select" id="f-cat">
-          <option value="">— Тандаңыз —</option>
-          <option>Медицина</option><option>Билим берүү</option><option>Соода</option>
-          <option>Тамак-аш</option><option>Курулуш</option><option>Сулуулук</option>
-          <option>Банктар</option><option>Мамлекеттик</option><option>Башка</option>
+          <option value="">— Жүктөлүүдө... —</option>
         </select>
       </div>
       <div>
