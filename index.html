@@ -532,37 +532,37 @@ onAuthStateChanged(auth, user => {
 });
 
 // ─── AUTH ────────────────────────────────────────────────────
-window.doLogin = async () => {
+window._doLogin = async () => {
   const email = document.getElementById('login-email').value.trim();
   const pass = document.getElementById('login-pass').value;
-  if (!email || !pass) return showErr('auth-error', 'Бардык талааларды толтуруңуз.');
+  if (!email || !pass) return window._showErr('auth-error', 'Бардык талааларды толтуруңуз.');
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-    showToast('Кирдиңиз! 👋');
+    window._showToast('Кирдиңиз! 👋');
   } catch(e) {
-    showErr('auth-error', 'Email же сырсөз туура эмес.');
+    window._showErr('auth-error', 'Email же сырсөз туура эмес.');
   }
 };
 
-window.doRegister = async () => {
+window._doRegister = async () => {
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const pass = document.getElementById('reg-pass').value;
-  if (!name || !email || !pass) return showErr('auth-error', 'Бардык талааларды толтуруңуз.');
-  if (pass.length < 6) return showErr('auth-error', 'Сырсөз кеминде 6 белги болушу керек.');
+  if (!name || !email || !pass) return window._showErr('auth-error', 'Бардык талааларды толтуруңуз.');
+  if (pass.length < 6) return window._showErr('auth-error', 'Сырсөз кеминде 6 белги болушу керек.');
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(cred.user, { displayName: name });
-    showToast('Каттылдыңыз! 🎉');
+    window._showToast('Каттылдыңыз! 🎉');
   } catch(e) {
-    if (e.code === 'auth/email-already-in-use') showErr('auth-error', 'Бул email мурунтан катталган.');
-    else showErr('auth-error', 'Ката кетти: ' + e.message);
+    if (e.code === 'auth/email-already-in-use') window._showErr('auth-error', 'Бул email мурунтан катталган.');
+    else window._showErr('auth-error', 'Ката кетти: ' + e.message);
   }
 };
 
-window.doLogout = async () => {
+window._doLogout = async () => {
   await signOut(auth);
-  showToast('Чыктыңыз');
+  window._showToast('Чыктыңыз');
 };
 
 // ─── LOAD DATA ───────────────────────────────────────────────
@@ -749,21 +749,21 @@ function renderOrgCats(cats) {
 }
 
 // ─── FILTER ──────────────────────────────────────────────────
-window.filterAds = (cat) => {
+window._filterAds = (cat) => {
   const s = document.getElementById('ads-search').value.toLowerCase();
   let arr = window._allAds;
   if (cat) arr = arr.filter(a => a.category === cat);
   if (s) arr = arr.filter(a => a.title.toLowerCase().includes(s) || (a.location||'').toLowerCase().includes(s));
   renderAds(arr);
 };
-window.filterJobs = (cat) => {
+window._filterJobs = (cat) => {
   const s = document.getElementById('jobs-search').value.toLowerCase();
   let arr = window._allJobs;
   if (cat) arr = arr.filter(j => j.category === cat);
   if (s) arr = arr.filter(j => j.title.toLowerCase().includes(s) || (j.company||'').toLowerCase().includes(s));
   renderJobs(arr);
 };
-window.filterOrgs = (cat) => {
+window._filterOrgs = (cat) => {
   const s = document.getElementById('orgs-search').value.toLowerCase();
   let arr = window._allOrgs;
   if (cat) arr = arr.filter(o => o.category === cat);
@@ -772,7 +772,7 @@ window.filterOrgs = (cat) => {
 };
 
 // ─── DETAIL ──────────────────────────────────────────────────
-window.showDetail = (type, id) => {
+window._showDetail = (type, id) => {
   window._prevScreen = document.querySelector('.screen.active').id.replace('screen-','');
   const item = (type==='ad'?window._allAds:type==='job'?window._allJobs:window._allOrgs).find(x=>x.id===id);
   if (!item) return;
@@ -824,8 +824,8 @@ window.showDetail = (type, id) => {
 };
 
 // ─── SUBMIT ──────────────────────────────────────────────────
-window.goSubmit = (type) => {
-  if (!window._currentUser) { goScreen('account'); showToast('Алгач кириңиз'); return; }
+window._goSubmit = (type) => {
+  if (!window._currentUser) { goScreen('account'); window._showToast('Алгач кириңиз'); return; }
   window._submitType = type;
   const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
@@ -934,11 +934,11 @@ function getFormHTML(type) {
     <textarea class="field-textarea" id="f-desc" placeholder="Ишкана жөнүндө кыскача..."></textarea>`;
 }
 
-window.doSubmit = async () => {
+window._doSubmit = async () => {
   const type = window._submitType;
   const title = document.getElementById('f-title')?.value.trim();
-  if (!title) return showErr('submit-error', 'Аталышын жазыңыз.');
-  if (!window._currentUser) return showErr('submit-error', 'Алгач кириңиз.');
+  if (!title) return window._showErr('submit-error', 'Аталышын жазыңыз.');
+  if (!window._currentUser) return window._showErr('submit-error', 'Алгач кириңиз.');
 
   const btn = document.getElementById('submit-btn');
   btn.textContent = 'Жиберилүүдө...'; btn.disabled = true;
@@ -974,17 +974,17 @@ window.doSubmit = async () => {
     }
 
     await addDoc(collection(db, colName), base);
-    showToast('✅ Жиберилди! Модератор текшерет.');
+    window._showToast('✅ Жиберилди! Модератор текшерет.');
     goScreen('home');
   } catch(e) {
-    showErr('submit-error', 'Ката кетти: ' + e.message);
+    window._showErr('submit-error', 'Ката кетти: ' + e.message);
   } finally {
     btn.textContent = 'Жиберүү'; btn.disabled = false;
   }
 };
 
 // ─── ADMIN ───────────────────────────────────────────────────
-window.switchAdminTab = (tab) => {
+window._switchAdminTab = (tab) => {
   window._adminTab = tab;
   document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('atab-'+tab).classList.add('active');
@@ -1036,20 +1036,20 @@ async function loadAdminList() {
   } catch(e) { el.innerHTML = '<div class="empty-state"><div>⚠️</div><p>Жүктөөдө ката кетти</p></div>'; }
 }
 
-window.adminAction = async (col, id, status) => {
+window._adminAction = async (col, id, status) => {
   try {
     await updateDoc(doc(db, col, id), { status });
-    showToast(status === 'approved' ? '✅ Бекитилди!' : '❌ Четке кагылды');
+    window._showToast(status === 'approved' ? '✅ Бекитилди!' : '❌ Четке кагылды');
     loadAdminPanel();
     // Refresh public lists
     if (col==='ads') loadAds();
     else if (col==='jobs') loadJobs();
     else loadOrgs();
-  } catch(e) { showToast('Ката кетти'); }
+  } catch(e) { window._showToast('Ката кетти'); }
 };
 
 // ─── SEARCH ──────────────────────────────────────────────────
-window.doSearch = () => {
+window._doSearch = () => {
   const s = document.getElementById('home-search').value.toLowerCase().trim();
   if (!s) return;
   goScreen('ads');
@@ -1081,18 +1081,18 @@ function isOpen(hours, open24) {
   return cur >= s && cur <= e;
 }
 
-window.showErr = (id, msg) => {
+window._showErr = (id, msg) => {
   const el = document.getElementById(id);
   el.textContent = msg; el.style.display = 'block';
 };
 
-window.showToast = (msg) => {
+window._showToast = (msg) => {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2800);
 };
 
-window.goMyPosts = () => showToast('Жакында кошулат 🔜');
+window._goMyPosts = () => window._showToast('Жакында кошулат 🔜');
 
 // ─── INIT ─────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
@@ -1131,4 +1131,25 @@ window.switchAuthTab = (tab) => {
   document.getElementById('tab-register').classList.toggle('active', tab==='register');
   document.getElementById('auth-error').style.display = 'none';
 };
+
+// Module функцияларынын wrapper'лары — onclick'тан чакыруу үчүн
+function goSubmit(t){ if(window._goSubmit) window._goSubmit(t); else setTimeout(()=>goSubmit(t),100); }
+function doLogin(){ if(window._doLogin) window._doLogin(); else setTimeout(doLogin,100); }
+function doRegister(){ if(window._doRegister) window._doRegister(); else setTimeout(doRegister,100); }
+function doLogout(){ if(window._doLogout) window._doLogout(); else setTimeout(doLogout,100); }
+function doForgotPassword(){ if(window._doForgotPassword) window._doForgotPassword(); else setTimeout(doForgotPassword,100); }
+function doSubmit(){ if(window._doSubmit) window._doSubmit(); else setTimeout(doSubmit,100); }
+function doSearch(){ if(window._doSearch) window._doSearch(); else setTimeout(doSearch,100); }
+function showDetail(t,i){ if(window._showDetail) window._showDetail(t,i); else setTimeout(()=>showDetail(t,i),100); }
+function switchAdminTab(t){ if(window._switchAdminTab) window._switchAdminTab(t); else setTimeout(()=>switchAdminTab(t),100); }
+function adminAction(c,i,s){ if(window._adminAction) window._adminAction(c,i,s); else setTimeout(()=>adminAction(c,i,s),100); }
+function selectCatType(t){ if(window._selectCatType) window._selectCatType(t); else setTimeout(()=>selectCatType(t),100); }
+function addCategory(){ if(window._addCategory) window._addCategory(); else setTimeout(addCategory,100); }
+function deleteCat(i){ if(window._deleteCat) window._deleteCat(i); else setTimeout(()=>deleteCat(i),100); }
+function goMyPosts(){ if(window._goMyPosts) window._goMyPosts(); else setTimeout(goMyPosts,100); }
+function filterAds(c){ if(window._filterAds) window._filterAds(c); else setTimeout(()=>filterAds(c),100); }
+function filterJobs(c){ if(window._filterJobs) window._filterJobs(c); else setTimeout(()=>filterJobs(c),100); }
+function filterOrgs(c){ if(window._filterOrgs) window._filterOrgs(c); else setTimeout(()=>filterOrgs(c),100); }
+function showToast(m){ if(window._showToast) window._showToast(m); else setTimeout(()=>showToast(m),100); }
+function showErr(i,m){ if(window._showErr) window._showErr(i,m); else setTimeout(()=>showErr(i,m),100); }
 </script></html>
