@@ -847,11 +847,18 @@ window._showDetail = (type, id) => {
         <div class="detail-title">${item.title}</div>
         ${item.rating?`<div style="margin-bottom:10px"><span class="rating">⭐ ${item.rating}</span> <span style="color:var(--muted);font-size:.8rem">(${item.reviews||0} пикир)</span></div>`:''}
         ${item.phone?`<div class="detail-row"><span class="detail-row-label">📞 Телефон</span><span>${item.phone}</span></div>`:''}
+        ${item.whatsapp?`<div class="detail-row"><span class="detail-row-label">📱 WhatsApp</span><span>${item.whatsapp}</span></div>`:''}
         ${item.address?`<div class="detail-row"><span class="detail-row-label">📍 Дарек</span><span>${item.address}</span></div>`:''}
         <div class="detail-row"><span class="detail-row-label">🕐 Иш убактысы</span><span class="${open?'status-open':'status-closed'}">● ${item.open24?'24/7':(item.hours||'—')} — ${open?'Ачык':'Жабык'}</span></div>
         ${item.website?`<div class="detail-row"><span class="detail-row-label">🌐 Сайт</span><a href="${item.website}" target="_blank" style="color:var(--or)">${item.website}</a></div>`:''}
+        ${item.instagram?`<div class="detail-row"><span class="detail-row-label">📸 Instagram</span><a href="${item.instagram.startsWith('http')?item.instagram:'https://instagram.com/'+item.instagram.replace('@','')}" target="_blank" style="color:#E1306C;font-weight:600">@${item.instagram.replace('https://instagram.com/','').replace('@','')}</a></div>`:''}
         ${item.description?`<div class="detail-content">${item.description}</div>`:''}
-        ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'">📞 Чалуу</button>`:''}
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 Чалуу</button>`:''}
+          ${item.whatsapp?`<a href="https://wa.me/${item.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>`:''}
+          ${item.instagram?`<a href="${item.instagram.startsWith('http')?item.instagram:'https://instagram.com/'+item.instagram.replace('@','')}" target="_blank" class="btn-call" style="background:#E1306C;text-decoration:none;margin-top:0">📸 Instagram'да ачуу</a>`:''}
+          ${item.mapurl?`<a href="${item.mapurl}" target="_blank" class="btn-call" style="background:#4285F4;text-decoration:none;margin-top:0">🗺️ Картада ачуу</a>`:''}
+        </div>
       </div>`;
   }
   goScreen('detail');
@@ -884,18 +891,10 @@ function getFormHTML(type) {
     <input class="field-input" id="f-title" placeholder="мис: 3 бөлмөлүү батир сатылат">
     <label class="field-label">Баасы</label>
     <input class="field-input" id="f-price" placeholder="мис: 850 000 сом">
-    <div class="grid-2">
-      <div>
-        <label class="field-label">Категория</label>
-        <select class="field-select" id="f-cat">
-          <option value="">— Жүктөлүүдө... —</option>
-        </select>
-      </div>
-      <div>
-        <label class="field-label">Эмодзи</label>
-        <input class="field-input" id="f-emoji" value="📦" style="text-align:center;font-size:1.3rem">
-      </div>
-    </div>
+    <label class="field-label">Категория</label>
+    <select class="field-select" id="f-cat">
+      <option value="">— Жүктөлүүдө... —</option>
+    </select>
     <label class="field-label">Жайгашкан жери</label>
     <input class="field-input" id="f-location" placeholder="мис: Баткен борбору">
     <label class="field-label">Телефон</label>
@@ -904,21 +903,24 @@ function getFormHTML(type) {
     <textarea class="field-textarea" id="f-desc" placeholder="Кошумча маалымат..."></textarea>`;
 
   if (type === 'job') return `
-    <div class="form-section">Вакансия маалыматы</div>
+    <div class="form-section">Жарыянын түрү</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <label style="display:flex;align-items:center;gap:8px;background:var(--gr-l);border:2px solid var(--gr);border-radius:10px;padding:12px;cursor:pointer;font-weight:700;font-size:.88rem;color:var(--gr)">
+        <input type="radio" name="job-mode" id="f-jobmode-give" value="give" checked style="width:16px;height:16px;accent-color:var(--gr)">
+        💼 Жумуш берем
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;background:var(--bl-l);border:2px solid var(--bl);border-radius:10px;padding:12px;cursor:pointer;font-weight:700;font-size:.88rem;color:var(--bl)">
+        <input type="radio" name="job-mode" id="f-jobmode-seek" value="seek" style="width:16px;height:16px;accent-color:var(--bl)">
+        🔍 Жумуш издейм
+      </label>
+    </div>
+    <div class="form-section">Маалымат</div>
     <label class="field-label">Кызмат орду *</label>
     <input class="field-input" id="f-title" placeholder="мис: Математика мугалими">
-    <label class="field-label">Компания / Мекеме *</label>
+    <label class="field-label">Компания / Мекеме</label>
     <input class="field-input" id="f-company" placeholder="мис: №3 Орто мектеп">
-    <div class="grid-2">
-      <div>
-        <label class="field-label">Маяна</label>
-        <input class="field-input" id="f-salary" placeholder="20 000 сом">
-      </div>
-      <div>
-        <label class="field-label">Эмодзи</label>
-        <input class="field-input" id="f-emoji" value="💼" style="text-align:center;font-size:1.3rem">
-      </div>
-    </div>
+    <label class="field-label">Маяна</label>
+    <input class="field-input" id="f-salary" placeholder="20 000 сом">
     <label class="field-label">Тармак</label>
     <select class="field-select" id="f-cat">
       <option value="">— Жүктөлүүдө... —</option>
@@ -939,20 +941,14 @@ function getFormHTML(type) {
     <div class="form-section">Ишкана маалыматы</div>
     <label class="field-label">Ишкананын аты *</label>
     <input class="field-input" id="f-title" placeholder="мис: Кафе Ала-Тоо">
-    <div class="grid-2">
-      <div>
-        <label class="field-label">Категория</label>
-        <select class="field-select" id="f-cat">
-          <option value="">— Жүктөлүүдө... —</option>
-        </select>
-      </div>
-      <div>
-        <label class="field-label">Эмодзи</label>
-        <input class="field-input" id="f-emoji" value="🏢" style="text-align:center;font-size:1.3rem">
-      </div>
-    </div>
+    <label class="field-label">Категория</label>
+    <select class="field-select" id="f-cat">
+      <option value="">— Жүктөлүүдө... —</option>
+    </select>
     <label class="field-label">Телефон</label>
     <input class="field-input" id="f-phone" type="tel" placeholder="0362 2-22-33">
+    <label class="field-label">📱 WhatsApp номери</label>
+    <input class="field-input" id="f-whatsapp" type="tel" placeholder="0700 123-456">
     <div class="grid-2">
       <div>
         <label class="field-label">Иш убактысы</label>
@@ -963,8 +959,13 @@ function getFormHTML(type) {
         <input class="field-input" id="f-address" placeholder="Ленин көч., 45">
       </div>
     </div>
+    <label class="field-label">🗺️ Google Maps шилтемеси</label>
+    <input class="field-input" id="f-mapurl" type="url" placeholder="https://maps.google.com/...">
+    <div style="font-size:.75rem;color:var(--muted);margin-top:-10px;margin-bottom:12px">Google Maps'та ишкананы таап, "Шилтемени бөлүшүү" баскычынан алыңыз</div>
     <label class="field-label">Веб-сайт (милдеттүү эмес)</label>
     <input class="field-input" id="f-website" type="url" placeholder="https://...">
+    <label class="field-label">📸 Instagram</label>
+    <input class="field-input" id="f-instagram" placeholder="мис: cafe.alatoo">
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Ишкана жөнүндө кыскача..."></textarea>`;
 }
@@ -979,14 +980,21 @@ window._doSubmit = async () => {
   btn.textContent = 'Жиберилүүдө...'; btn.disabled = true;
 
   try {
+    // Эмодзини категориядан автоматтык алабыз
+    const catName = document.getElementById('f-cat')?.value || '';
+    const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : 'orgs';
+    const catList = window._cats[catType] || [];
+    const catObj = catList.find(c => c.name === catName);
+    const autoEmoji = catObj ? catObj.emoji : (type === 'ad' ? '📦' : type === 'job' ? '💼' : '🏢');
+
     const base = {
       title, status: 'pending',
       authorId: window._currentUser.uid,
       authorEmail: window._currentUser.email,
       authorName: window._currentUser.displayName || '',
       createdAt: serverTimestamp(),
-      emoji: document.getElementById('f-emoji')?.value || '',
-      category: document.getElementById('f-cat')?.value || '',
+      emoji: autoEmoji,
+      category: catName,
       description: document.getElementById('f-desc')?.value || '',
       phone: document.getElementById('f-phone')?.value || '',
       location: document.getElementById('f-location')?.value || '',
@@ -1000,11 +1008,15 @@ window._doSubmit = async () => {
       base.company = document.getElementById('f-company')?.value || '';
       base.salary = document.getElementById('f-salary')?.value || '';
       base.jobType = document.getElementById('f-jobtype')?.value || '';
+      base.jobMode = document.querySelector('input[name="job-mode"]:checked')?.value || 'give';
     } else {
       colName = 'orgs';
       base.hours = document.getElementById('f-hours')?.value || '';
       base.address = document.getElementById('f-address')?.value || '';
       base.website = document.getElementById('f-website')?.value || '';
+      base.instagram = document.getElementById('f-instagram')?.value || '';
+      base.whatsapp = document.getElementById('f-whatsapp')?.value || '';
+      base.mapurl = document.getElementById('f-mapurl')?.value || '';
       base.rating = 0; base.reviews = 0; base.vip = false;
     }
 
