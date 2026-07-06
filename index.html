@@ -822,7 +822,11 @@ window._showDetail = (type, id) => {
         <div class="detail-row"><span class="detail-row-label">🗂 Категория</span><span>${item.category||'—'}</span></div>
         <div class="detail-row"><span class="detail-row-label">📅 Дата</span><span>${timeAgo(item.createdAt)}</span></div>
         ${item.description?`<div class="detail-content">${item.description}</div>`:''}
-        ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'">📞 ${item.phone}</button>`:''}
+        ${item.phone?`
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 ${item.phone}</button>
+          <a href="https://wa.me/${'formatWhatsApp_placeholder'}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0" onclick="this.href='https://wa.me/'+formatWhatsApp('${item.phone}')">📱 WhatsApp жазуу</a>
+        </div>`:''}
       </div>`;
   } else if (type === 'job') {
     el.innerHTML = `
@@ -836,7 +840,11 @@ window._showDetail = (type, id) => {
         <div class="detail-row"><span class="detail-row-label">🗂 Тармак</span><span>${item.category||'—'}</span></div>
         ${item.phone?`<div class="detail-row"><span class="detail-row-label">📞 Телефон</span><span>${item.phone}</span></div>`:''}
         ${item.description?`<div class="detail-content">${item.description}</div>`:''}
-        ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'">📞 Байланышуу</button>`:''}
+        ${item.phone?`
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 Байланышуу</button>
+          <a href="#" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0" onclick="this.href='https://wa.me/'+formatWhatsApp('${item.phone}')">📱 WhatsApp жазуу</a>
+        </div>`:''}
       </div>`;
   } else {
     const open = isOpen(item.hours, item.open24);
@@ -853,11 +861,20 @@ window._showDetail = (type, id) => {
         ${item.website?`<div class="detail-row"><span class="detail-row-label">🌐 Сайт</span><a href="${item.website}" target="_blank" style="color:var(--or)">${item.website}</a></div>`:''}
         ${item.instagram?`<div class="detail-row"><span class="detail-row-label">📸 Instagram</span><a href="${item.instagram.startsWith('http')?item.instagram:'https://instagram.com/'+item.instagram.replace('@','')}" target="_blank" style="color:#E1306C;font-weight:600">@${item.instagram.replace('https://instagram.com/','').replace('@','')}</a></div>`:''}
         ${item.description?`<div class="detail-content">${item.description}</div>`:''}
+        ${item.lat && item.lng ? `
+        <div style="margin-top:16px">
+          <div style="font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:8px">🗺️ Жайгашкан жер</div>
+          <div style="border-radius:12px;overflow:hidden;height:200px">
+            <iframe
+              src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(item.lng)-0.005},${parseFloat(item.lat)-0.005},${parseFloat(item.lng)+0.005},${parseFloat(item.lat)+0.005}&layer=mapnik&marker=${item.lat},${item.lng}"
+              style="width:100%;height:100%;border:none"></iframe>
+          </div>
+        </div>` : ''}
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
           ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 Чалуу</button>`:''}
-          ${item.whatsapp?`<a href="https://wa.me/${item.whatsapp.replace(/[^0-9]/g,'')}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>`:''}
+          ${item.whatsapp?`<a href="https://wa.me/${formatWhatsApp(item.whatsapp)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>`:''}
           ${item.instagram?`<a href="${item.instagram.startsWith('http')?item.instagram:'https://instagram.com/'+item.instagram.replace('@','')}" target="_blank" class="btn-call" style="background:#E1306C;text-decoration:none;margin-top:0">📸 Instagram'да ачуу</a>`:''}
-          ${item.mapurl?`<a href="${item.mapurl}" target="_blank" class="btn-call" style="background:#4285F4;text-decoration:none;margin-top:0">🗺️ Картада ачуу</a>`:''}
+          ${item.lat && item.lng?`<a href="https://www.google.com/maps?q=${item.lat},${item.lng}" target="_blank" class="btn-call" style="background:#4285F4;text-decoration:none;margin-top:0">🗺️ Google Maps'та ачуу</a>`:''}
         </div>
       </div>`;
   }
@@ -959,9 +976,22 @@ function getFormHTML(type) {
         <input class="field-input" id="f-address" placeholder="Ленин көч., 45">
       </div>
     </div>
-    <label class="field-label">🗺️ Google Maps шилтемеси</label>
-    <input class="field-input" id="f-mapurl" type="url" placeholder="https://maps.google.com/...">
-    <div style="font-size:.75rem;color:var(--muted);margin-top:-10px;margin-bottom:12px">Google Maps'та ишкананы таап, "Шилтемени бөлүшүү" баскычынан алыңыз</div>
+    <label class="field-label">🗺️ Жайгашкан жер (картадан тандаңыз)</label>
+    <div style="background:var(--bg);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:6px">
+      <div id="map-picker" style="height:220px;position:relative;background:#e8f0fe;display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;color:var(--muted)">
+          <div style="font-size:2rem">🗺️</div>
+          <div style="font-size:.85rem;margin-top:6px">Жайгашкан жерди аныктоо үчүн</div>
+        </div>
+      </div>
+      <div style="padding:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" onclick="pickMyLocation()" style="flex:1;background:var(--bl-l);color:var(--bl);border:none;padding:10px;border-radius:9px;font-weight:700;font-size:.85rem;cursor:pointer">📍 Менин жайгашкан жерим</button>
+        <button type="button" onclick="openMapPicker()" style="flex:1;background:var(--or-l);color:var(--or);border:none;padding:10px;border-radius:9px;font-weight:700;font-size:.85rem;cursor:pointer">🗺️ Картадан тандоо</button>
+      </div>
+    </div>
+    <input type="hidden" id="f-lat" value="">
+    <input type="hidden" id="f-lng" value="">
+    <div id="map-selected" style="display:none;background:var(--gr-l);color:var(--gr);padding:10px 13px;border-radius:9px;font-size:.82rem;font-weight:600;margin-bottom:12px">✅ Жайгашкан жер тандалды</div>
     <label class="field-label">Веб-сайт (милдеттүү эмес)</label>
     <input class="field-input" id="f-website" type="url" placeholder="https://...">
     <label class="field-label">📸 Instagram</label>
@@ -1016,7 +1046,11 @@ window._doSubmit = async () => {
       base.website = document.getElementById('f-website')?.value || '';
       base.instagram = document.getElementById('f-instagram')?.value || '';
       base.whatsapp = document.getElementById('f-whatsapp')?.value || '';
-      base.mapurl = document.getElementById('f-mapurl')?.value || '';
+      const lat = document.getElementById('f-lat')?.value || '';
+      const lng = document.getElementById('f-lng')?.value || '';
+      base.lat = lat;
+      base.lng = lng;
+      base.mapurl = lat && lng ? `https://www.google.com/maps?q=${lat},${lng}` : '';
       base.rating = 0; base.reviews = 0; base.vip = false;
     }
 
@@ -1169,7 +1203,78 @@ window.goScreen = (name) => {
   window.dispatchEvent(new CustomEvent('screen-change', {detail:name}));
 };
 
-window.goBack = () => window.goScreen(window._prevScreen || 'home');
+function formatWhatsApp(phone) {
+  let num = phone.replace(/[^0-9]/g, '');
+  if (num.startsWith('0')) num = '996' + num.slice(1);
+  if (!num.startsWith('996')) num = '996' + num;
+  return num;
+}
+
+// GPS координат алуу
+function pickMyLocation() {
+  if (!navigator.geolocation) { showToast('GPS колдоосу жок'); return; }
+  showToast('📍 Жайгашкан жер аныкталууда...');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      setMapLocation(
+        pos.coords.latitude.toFixed(6),
+        pos.coords.longitude.toFixed(6)
+      );
+    },
+    () => showToast('GPS уруксаты берилген жок. Орнотуулардан уруксат бериңиз.')
+  );
+}
+
+// Картадан тандоо
+function openMapPicker() {
+  const curLat = document.getElementById('f-lat')?.value || '40.0671';
+  const curLng = document.getElementById('f-lng')?.value || '70.9508';
+  const mapDiv = document.getElementById('map-picker');
+  if (!mapDiv) return;
+  // OpenStreetMap iframe
+  mapDiv.innerHTML = `
+    <iframe
+      src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(curLng)-0.01},${parseFloat(curLat)-0.01},${parseFloat(curLng)+0.01},${parseFloat(curLat)+0.01}&layer=mapnik&marker=${curLat},${curLng}"
+      style="width:100%;height:220px;border:none"></iframe>`;
+  // Координатты кол менен киргизүү
+  const coords = prompt(
+    '📍 Жайгашкан жердин координаттары\n\n' +
+    'Кантип алуу:\n' +
+    '1. Google Maps\'ты ачыңыз\n' +
+    '2. Ишкана турган жерди узак басыңыз\n' +
+    '3. Ылдыйда чыккан сандарды (мис: 40.123, 70.456) копилеп бул жерге чаптаңыз\n\n' +
+    'Координат (мис: 40.1234, 70.9876):'
+  );
+  if (coords && coords.includes(',')) {
+    const parts = coords.split(',');
+    const la = parts[0].trim();
+    const lo = parts[1].trim();
+    if (la && lo && !isNaN(la) && !isNaN(lo)) {
+      setMapLocation(la, lo);
+    } else {
+      showToast('Координат туура эмес жазылды');
+    }
+  }
+}
+
+function setMapLocation(lat, lng) {
+  const latEl = document.getElementById('f-lat');
+  const lngEl = document.getElementById('f-lng');
+  const mapDiv = document.getElementById('map-picker');
+  const selDiv = document.getElementById('map-selected');
+  if (latEl) latEl.value = lat;
+  if (lngEl) lngEl.value = lng;
+  if (mapDiv) {
+    mapDiv.innerHTML = `<iframe
+      src="https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(lng)-0.005},${parseFloat(lat)-0.005},${parseFloat(lng)+0.005},${parseFloat(lat)+0.005}&layer=mapnik&marker=${lat},${lng}"
+      style="width:100%;height:220px;border:none"></iframe>`;
+  }
+  if (selDiv) {
+    selDiv.style.display = 'block';
+    selDiv.textContent = '✅ Жайгашкан жер белгиленди: ' + lat + ', ' + lng;
+  }
+  showToast('✅ Жайгашкан жер белгиленди!');
+}
 
 window.switchAuthTab = (tab) => {
   document.getElementById('login-form').style.display = tab==='login'?'block':'none';
