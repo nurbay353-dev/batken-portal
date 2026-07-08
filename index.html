@@ -466,6 +466,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .form-section{font-family:'Nunito',sans-serif;font-weight:800;font-size:.9rem;color:var(--or);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px}
 .field-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;margin-bottom:13px;background:var(--bg);appearance:none}
 .field-textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;margin-bottom:13px;resize:vertical;min-height:90px}
+.img-upload-box{border:1.5px dashed var(--border);border-radius:12px;padding:14px;text-align:center;margin-bottom:13px;background:var(--bg);cursor:pointer;position:relative;overflow:hidden}
+.img-upload-box.has-img{padding:0;border-style:solid}
+.img-upload-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.img-upload-placeholder{color:var(--muted);font-size:.85rem}
+.img-upload-placeholder div:first-child{font-size:1.8rem;margin-bottom:6px}
+.img-upload-preview{width:100%;height:160px;object-fit:cover;display:block;border-radius:11px}
+.img-upload-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:.9rem;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center}
+.card-img-real{width:100%;height:100%;object-fit:cover;display:block}
+.list-icon.has-img{overflow:hidden;padding:0}
+.list-icon img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
+.detail-img img{width:100%;height:100%;object-fit:cover;display:block}
 .field-textarea:focus,.field-select:focus{border-color:var(--or)}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
@@ -512,6 +523,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .empty-state p{font-size:.88rem}</style><script type="module">import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, orderBy, serverTimestamp, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
 // ✅ FIREBASE CONFIG
 const firebaseConfig = {
@@ -529,6 +541,11 @@ const ADMIN_EMAILS = ['batkenlist@gmail.com'];
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
+window._storage = storage;
+window._storageRef = storageRef;
+window._uploadBytes = uploadBytes;
+window._getDownloadURL = getDownloadURL;
 
 // ─── ГЛОБАЛ STATE ───────────────────────────────────────────
 window._db = db;
@@ -674,7 +691,7 @@ function renderHomeAds(ads) {
   if (!ads.length) { el.innerHTML = '<div class="empty-state" style="min-width:200px"><div>📋</div><p>Жарнама жок</p></div>'; return; }
   el.innerHTML = ads.map(a => `
     <div class="ad-card-h" onclick="showDetail('ad','${a.id}')">
-      <div class="ad-card-img" style="background:linear-gradient(135deg,#FFEDD5,#FED7AA)">${a.emoji||'📦'}</div>
+      <div class="ad-card-img${a.imageUrl?' has-img':''}" style="${a.imageUrl?'':'background:linear-gradient(135deg,#FFEDD5,#FED7AA)'}">${a.imageUrl?`<img src="${a.imageUrl}" class="card-img-real">`:(a.emoji||'📦')}</div>
       <div class="ad-card-body">
         ${a.vip?'<div class="vip-dot">⭐ VIP</div>':''}
         <div class="ad-cat-tag">${a.category||''}</div>
@@ -690,7 +707,7 @@ function renderHomeJobs(jobs) {
   if (!jobs.length) { el.innerHTML = '<div class="empty-state"><div>💼</div><p>Вакансия жок</p></div>'; return; }
   el.innerHTML = jobs.map(j => `
     <div class="list-card" onclick="showDetail('job','${j.id}')">
-      <div class="list-icon" style="background:var(--gr-l)">${j.emoji||'💼'}</div>
+      <div class="list-icon${j.imageUrl?' has-img':''}" style="${j.imageUrl?'':'background:var(--gr-l)'}">${j.imageUrl?`<img src="${j.imageUrl}">`:(j.emoji||'💼')}</div>
       <div class="list-body">
         <div class="list-title">${j.title}</div>
         <div class="list-sub">${j.company||''}</div>
@@ -708,7 +725,7 @@ function renderHomeOrgs(orgs) {
     const open = isOpen(o.hours, o.open24);
     return `
     <div class="list-card" onclick="showDetail('org','${o.id}')">
-      <div class="list-icon" style="background:var(--or-l)">${o.emoji||'🏢'}</div>
+      <div class="list-icon${o.imageUrl?' has-img':''}" style="${o.imageUrl?'':'background:var(--or-l)'}">${o.imageUrl?`<img src="${o.imageUrl}">`:(o.emoji||'🏢')}</div>
       <div class="list-body">
         ${o.vip?'<div class="vip-dot" style="margin-bottom:4px">⭐ VIP</div>':''}
         <div class="list-title">${o.title}</div>
@@ -731,7 +748,7 @@ function renderAds(ads) {
     const soldBadge = ps && ps !== 'active' ? `<span style="background:#EDE9FE;color:#7C3AED;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;margin-bottom:4px;display:inline-block">✓ Сатылды</span><br>` : '';
     return `
     <div class="list-card" onclick="showDetail('ad','${a.id}')" style="${ps&&ps!=='active'?'opacity:.65':''}">
-      <div class="list-icon" style="background:var(--or-l)">${a.emoji||'📦'}</div>
+      <div class="list-icon${a.imageUrl?' has-img':''}" style="${a.imageUrl?'':'background:var(--or-l)'}">${a.imageUrl?`<img src="${a.imageUrl}">`:(a.emoji||'📦')}</div>
       <div class="list-body">
         ${a.vip?'<div class="vip-dot" style="margin-bottom:5px">⭐ VIP</div>':''}
         ${soldBadge}
@@ -749,7 +766,7 @@ function renderJobs(jobs) {
   if (!jobs.length) { el.innerHTML = '<div class="empty-state"><div>💼</div><p>Вакансия табылган жок</p></div>'; return; }
   el.innerHTML = jobs.map(j => `
     <div class="list-card" onclick="showDetail('job','${j.id}')">
-      <div class="list-icon" style="background:var(--gr-l)">${j.emoji||'💼'}</div>
+      <div class="list-icon${j.imageUrl?' has-img':''}" style="${j.imageUrl?'':'background:var(--gr-l)'}">${j.imageUrl?`<img src="${j.imageUrl}">`:(j.emoji||'💼')}</div>
       <div class="list-body">
         <div class="list-title">${j.title}</div>
         <div class="list-sub">${j.company||''}</div>
@@ -770,7 +787,7 @@ function renderOrgs(orgs) {
     const open = isOpen(o.hours, o.open24);
     return `
     <div class="list-card" onclick="showDetail('org','${o.id}')">
-      <div class="list-icon" style="background:var(--or-l)">${o.emoji||'🏢'}</div>
+      <div class="list-icon${o.imageUrl?' has-img':''}" style="${o.imageUrl?'':'background:var(--or-l)'}">${o.imageUrl?`<img src="${o.imageUrl}">`:(o.emoji||'🏢')}</div>
       <div class="list-body">
         ${o.vip?'<div class="vip-dot" style="margin-bottom:5px">⭐ VIP</div>':''}
         <div class="list-title">${o.title}</div>
@@ -835,7 +852,7 @@ window._showDetail = (type, id) => {
   const el = document.getElementById('detail-content');
   if (type === 'ad') {
     el.innerHTML = `
-      <div class="detail-img">${item.emoji||'📦'}</div>
+      <div class="detail-img" style="${item.imageUrl?'background:none':''}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'📦')}</div>
       <div class="detail-body">
         ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP жарнама</div>':''}
         <div class="detail-title">${item.title}</div>
@@ -852,7 +869,7 @@ window._showDetail = (type, id) => {
       </div>`;
   } else if (type === 'job') {
     el.innerHTML = `
-      <div class="detail-img" style="background:linear-gradient(135deg,var(--gr-l),#86EFAC)">${item.emoji||'💼'}</div>
+      <div class="detail-img" style="${item.imageUrl?'background:none':'background:linear-gradient(135deg,var(--gr-l),#86EFAC)'}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'💼')}</div>
       <div class="detail-body">
         <div class="detail-title">${item.title}</div>
         <div style="color:var(--muted);font-size:.88rem;margin-bottom:12px">${item.company||''}</div>
@@ -871,7 +888,7 @@ window._showDetail = (type, id) => {
   } else {
     const open = isOpen(item.hours, item.open24);
     el.innerHTML = `
-      <div class="detail-img" style="background:linear-gradient(135deg,var(--pu-l),#C4B5FD)">${item.emoji||'🏢'}</div>
+      <div class="detail-img" style="${item.imageUrl?'background:none':'background:linear-gradient(135deg,var(--pu-l),#C4B5FD)'}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'🏢')}</div>
       <div class="detail-body">
         ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP ишкана</div>':''}
         <div class="detail-title">${item.title}</div>
@@ -907,6 +924,7 @@ window._showDetail = (type, id) => {
 window._goSubmit = async (type) => {
   if (!window._currentUser) { goScreen('account'); window._showToast('Алгач кириңиз'); return; }
   window._submitType = type;
+  window._pendingImageBlob = null;
   const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
   document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
@@ -923,6 +941,88 @@ window._goSubmit = async (type) => {
   goScreen('submit');
 };
 
+// ─── СҮРӨТ ЖҮКТӨӨ ────────────────────────────────────────────
+window._pendingImageBlob = null;
+
+window.handleImageSelect = (input) => {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { window._showToast('Сүрөт файлын тандаңыз'); return; }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      // Canvas аркылуу компрессиялоо/чоңдугун азайтуу
+      const maxDim = 1280;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob((blob) => {
+        window._pendingImageBlob = blob;
+        const url = URL.createObjectURL(blob);
+        renderImagePreview(url);
+      }, 'image/jpeg', 0.8);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+function renderImagePreview(url) {
+  const box = document.getElementById('img-upload-box');
+  if (!box) return;
+  box.classList.add('has-img');
+  box.innerHTML = `
+    <img src="${url}" class="img-upload-preview">
+    <input type="file" accept="image/*" id="f-image" onchange="handleImageSelect(this)">
+    <button type="button" class="img-upload-remove" onclick="event.stopPropagation();removeSelectedImage()">✕</button>`;
+}
+
+window.removeSelectedImage = () => {
+  window._pendingImageBlob = null;
+  const box = document.getElementById('img-upload-box');
+  if (!box) return;
+  box.classList.remove('has-img');
+  box.innerHTML = `
+    <input type="file" accept="image/*" id="f-image" onchange="handleImageSelect(this)">
+    <div class="img-upload-placeholder" id="img-upload-placeholder">
+      <div>📷</div>
+      <div>Сүрөт тандоо үчүн басыңыз</div>
+    </div>`;
+};
+
+async function uploadPendingImage(colName, uid) {
+  if (!window._pendingImageBlob) return '';
+  try {
+    const path = `posts/${colName}/${uid}_${Date.now()}.jpg`;
+    const r = window._storageRef(window._storage, path);
+    await window._uploadBytes(r, window._pendingImageBlob, { contentType: 'image/jpeg' });
+    return await window._getDownloadURL(r);
+  } catch (e) {
+    console.error('Сүрөт жүктөөдө ката:', e);
+    window._showToast('⚠️ Сүрөт жүктөлбөй калды, бирок жарыя сакталды');
+    return '';
+  }
+}
+
+function imageUploadHTML() {
+  return `
+    <label class="field-label">📷 Сүрөт (милдеттүү эмес)</label>
+    <div class="img-upload-box" id="img-upload-box">
+      <input type="file" accept="image/*" id="f-image" onchange="handleImageSelect(this)">
+      <div class="img-upload-placeholder" id="img-upload-placeholder">
+        <div>📷</div>
+        <div>Сүрөт тандоо үчүн басыңыз</div>
+      </div>
+    </div>`;
+}
+
 function getFormHTML(type) {
   const expiryField = `
     <label class="field-label">⏳ Жарыянын мөөнөтү</label>
@@ -936,6 +1036,7 @@ function getFormHTML(type) {
 
   if (type === 'ad') return `
     <div class="form-section">Негизги маалымат</div>
+    ${imageUploadHTML()}
     <label class="field-label">Аталышы *</label>
     <input class="field-input" id="f-title" placeholder="мис: 3 бөлмөлүү батир сатылат">
     <label class="field-label">Баасы</label>
@@ -965,6 +1066,7 @@ function getFormHTML(type) {
       </label>
     </div>
     <div class="form-section">Маалымат</div>
+    ${imageUploadHTML()}
     <label class="field-label">Кызмат орду *</label>
     <input class="field-input" id="f-title" placeholder="мис: Математика мугалими">
     <label class="field-label">Компания / Мекеме</label>
@@ -990,6 +1092,7 @@ function getFormHTML(type) {
 
   return `
     <div class="form-section">Ишкана маалыматы</div>
+    ${imageUploadHTML()}
     <label class="field-label">Ишкананын аты *</label>
     <input class="field-input" id="f-title" placeholder="мис: Кафе Ала-Тоо">
     <label class="field-label">Категория</label>
@@ -1097,7 +1200,13 @@ window._doSubmit = async () => {
       base.rating = 0; base.reviews = 0; base.vip = false;
     }
 
+    if (window._pendingImageBlob) {
+      btn.textContent = 'Сүрөт жүктөлүүдө...';
+      base.imageUrl = await uploadPendingImage(colName, window._currentUser.uid);
+    }
+
     await addDoc(collection(db, colName), base);
+    window._pendingImageBlob = null;
     window._showToast('✅ Жиберилди! Модератор текшерет.');
     goScreen('home');
   } catch(e) {
