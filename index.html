@@ -277,6 +277,23 @@ Admin панели
     <div class="spinner"></div>
    </div>
   </div>
+
+  <!-- МЕНИН ЖАРЫЯЛАРЫМ -->
+  <div class="screen" id="screen-myposts">
+   <div class="top-bar">
+    <button onclick="goScreen('account')" style="background:none;border:none;color:var(--or);font-weight:600;cursor:pointer;font-size:.88rem">← Артка</button>
+    <div class="top-bar-title">📄 Менин жарыяларым</div>
+    <div style="width:60px"></div>
+   </div>
+   <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchMyTab('ads')" id="mytab-ads">📋 Жарнамалар</button>
+    <button class="admin-tab" onclick="switchMyTab('jobs')" id="mytab-jobs">💼 Жумуш</button>
+    <button class="admin-tab" onclick="switchMyTab('orgs')" id="mytab-orgs">🏢 Ишканалар</button>
+   </div>
+   <div class="list-wrap" style="padding-top:12px" id="myposts-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
  </div>
  <!-- BOTTOM NAV -->
  <nav class="bottom-nav">
@@ -709,17 +726,22 @@ function renderHomeOrgs(orgs) {
 function renderAds(ads) {
   const el = document.getElementById('ads-list');
   if (!ads.length) { el.innerHTML = '<div class="empty-state"><div>📋</div><p>Жарнама табылган жок</p></div>'; return; }
-  el.innerHTML = ads.map(a => `
-    <div class="list-card" onclick="showDetail('ad','${a.id}')">
+  el.innerHTML = ads.map(a => {
+    const ps = a.postStatus;
+    const soldBadge = ps && ps !== 'active' ? `<span style="background:#EDE9FE;color:#7C3AED;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px;margin-bottom:4px;display:inline-block">✓ Сатылды</span><br>` : '';
+    return `
+    <div class="list-card" onclick="showDetail('ad','${a.id}')" style="${ps&&ps!=='active'?'opacity:.65':''}">
       <div class="list-icon" style="background:var(--or-l)">${a.emoji||'📦'}</div>
       <div class="list-body">
         ${a.vip?'<div class="vip-dot" style="margin-bottom:5px">⭐ VIP</div>':''}
+        ${soldBadge}
         <div class="list-title">${a.title}</div>
         <div class="list-sub">${a.category||''}</div>
         ${a.price?`<div class="list-price">${a.price}</div>`:''}
         <div class="list-meta"><span>📍 ${a.location||'Баткен'}</span><span>${timeAgo(a.createdAt)}</span></div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderJobs(jobs) {
@@ -902,6 +924,16 @@ window._goSubmit = async (type) => {
 };
 
 function getFormHTML(type) {
+  const expiryField = `
+    <label class="field-label">⏳ Жарыянын мөөнөтү</label>
+    <select class="field-select" id="f-expiry">
+      <option value="7">7 күн</option>
+      <option value="14">14 күн</option>
+      <option value="30" selected>30 күн</option>
+      <option value="60">60 күн</option>
+      <option value="90">90 күн</option>
+    </select>`;
+
   if (type === 'ad') return `
     <div class="form-section">Негизги маалымат</div>
     <label class="field-label">Аталышы *</label>
@@ -916,6 +948,7 @@ function getFormHTML(type) {
     <input class="field-input" id="f-location" placeholder="мис: Баткен борбору">
     <label class="field-label">Телефон</label>
     <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    ${expiryField}
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Кошумча маалымат..."></textarea>`;
 
@@ -951,6 +984,7 @@ function getFormHTML(type) {
     <input class="field-input" id="f-location" placeholder="мис: Баткен">
     <label class="field-label">Байланыш телефону</label>
     <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    ${expiryField}
     <label class="field-label">Сүрөттөмө / Талаптар</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Талаптар, шарттар..."></textarea>`;
 
@@ -996,6 +1030,7 @@ function getFormHTML(type) {
     <input class="field-input" id="f-website" type="url" placeholder="https://...">
     <label class="field-label">📸 Instagram</label>
     <input class="field-input" id="f-instagram" placeholder="мис: cafe.alatoo">
+    ${expiryField}
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Ишкана жөнүндө кыскача..."></textarea>`;
 }
@@ -1017,12 +1052,20 @@ window._doSubmit = async () => {
     const catObj = catList.find(c => c.name === catName);
     const autoEmoji = catObj ? catObj.emoji : (type === 'ad' ? '📦' : type === 'job' ? '💼' : '🏢');
 
+    // Мөөнөт эсептөө
+    const expiryDays = parseInt(document.getElementById('f-expiry')?.value || '30');
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + expiryDays);
+
     const base = {
       title, status: 'pending',
       authorId: window._currentUser.uid,
       authorEmail: window._currentUser.email,
       authorName: window._currentUser.displayName || '',
       createdAt: serverTimestamp(),
+      expiryDays,
+      expiryDate: expiryDate.toISOString(),
+      postStatus: 'active',
       emoji: autoEmoji,
       category: catName,
       description: document.getElementById('f-desc')?.value || '',
@@ -1173,7 +1216,120 @@ window._showToast = (msg) => {
   setTimeout(() => el.classList.remove('show'), 2800);
 };
 
-window._goMyPosts = () => window._showToast('Жакында кошулат 🔜');
+window._goMyPosts = () => {
+  goScreen('myposts');
+  loadMyPosts('ads');
+};
+
+window._myTab = 'ads';
+
+window.switchMyTab = (tab) => {
+  window._myTab = tab;
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mytab-'+tab)?.classList.add('active');
+  loadMyPosts(tab);
+};
+
+async function loadMyPosts(col) {
+  if (!window._currentUser) return;
+  const el = document.getElementById('myposts-list');
+  el.innerHTML = '<div class="spinner"></div>';
+  try {
+    const snap = await getDocs(collection(db, col));
+    const myDocs = snap.docs
+      .filter(d => d.data().authorId === window._currentUser.uid)
+      .sort((a,b) => (b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
+
+    if (!myDocs.length) {
+      el.innerHTML = '<div class="empty-state"><div>📄</div><p>Азырынча жарыяңыз жок</p></div>';
+      return;
+    }
+
+    const statusLabels = {
+      active: { label: 'Активдүү', color: 'var(--gr)', bg: 'var(--gr-l)' },
+      sold:   { label: 'Сатылды', color: '#7C3AED', bg: '#EDE9FE' },
+      hired:  { label: 'Табылды', color: '#2563EB', bg: '#DBEAFE' },
+      closed: { label: 'Жабылды', color: 'var(--re)', bg: 'var(--re-l)' },
+    };
+
+    const statusOptions = {
+      ads:  [['active','Активдүү'],['sold','Сатылды ✓']],
+      jobs: [['active','Активдүү'],['hired','Табылды ✓']],
+      orgs: [['active','Активдүү'],['closed','Жабылды ✗']],
+    };
+
+    el.innerHTML = myDocs.map(d => {
+      const it = d.data();
+      const id = d.id;
+      const ps = it.postStatus || 'active';
+      const st = statusLabels[ps] || statusLabels.active;
+
+      // Мөөнөт эсептөө
+      let expiryHtml = '';
+      if (it.expiryDate) {
+        const left = Math.ceil((new Date(it.expiryDate) - new Date()) / 86400000);
+        expiryHtml = left > 0
+          ? `<span style="font-size:.72rem;color:var(--muted)">⏳ ${left} күн калды</span>`
+          : `<span style="font-size:.72rem;color:var(--re)">⏳ Мөөнөтү өттү</span>`;
+      }
+
+      // Статус тандоо
+      const opts = (statusOptions[col]||statusOptions.ads)
+        .map(([v,l]) => `<option value="${v}" ${ps===v?'selected':''}>${l}</option>`).join('');
+
+      // Модерация статусу
+      const modBadge = it.status === 'pending'
+        ? `<span style="background:var(--am-l);color:var(--am);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px">⏳ Текшерүүдө</span>`
+        : it.status === 'rejected'
+        ? `<span style="background:var(--re-l);color:var(--re);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px">❌ Четке кагылды</span>`
+        : '';
+
+      return `
+      <div style="background:var(--card);border-radius:var(--radius);box-shadow:var(--sh);padding:14px;margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+          <div style="font-size:1.4rem">${it.emoji||'📄'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:'Nunito',sans-serif;font-weight:800;font-size:.95rem;line-height:1.3">${it.title}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+              ${modBadge}
+              <span style="background:${st.bg};color:${st.color};font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:6px">${st.label}</span>
+              ${expiryHtml}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select onchange="changePostStatus('${col}','${id}',this.value)"
+            style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:.82rem;background:var(--bg);font-family:'Inter',sans-serif">
+            ${opts}
+          </select>
+          <button onclick="deleteMyPost('${col}','${id}')"
+            style="background:var(--re-l);color:var(--re);border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer">
+            🗑 Өчүрүү
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty-state"><div>⚠️</div><p>Жүктөөдө ката кетти</p></div>';
+  }
+}
+
+window.changePostStatus = async (col, id, newStatus) => {
+  try {
+    await updateDoc(doc(db, col, id), { postStatus: newStatus });
+    window._showToast('✅ Статус өзгөртүлдү');
+    loadMyPosts(window._myTab);
+  } catch(e) { window._showToast('Ката кетти'); }
+};
+
+window.deleteMyPost = async (col, id) => {
+  if (!confirm('Бул жарыяны өчүрөсүзбү? Бул аракетти кайтарып болбойт.')) return;
+  try {
+    await deleteDoc(doc(db, col, id));
+    window._showToast('🗑 Жарыя өчүрүлдү');
+    loadMyPosts(window._myTab);
+  } catch(e) { window._showToast('Ката кетти'); }
+};
 
 // ─── INIT ─────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
@@ -1185,12 +1341,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('screen-change', (e) => {
   if (e.detail === 'admin') loadAdminPanel();
+  if (e.detail === 'myposts') { window._myTab='ads'; loadMyPosts('ads'); }
 });
 </script>
 
 <script>
 // ─── NAVIGATION (module эмес, глобал) ────────────────────────
-const navScreens = ['home','ads','jobs','catalog','account'];
+const navScreens = ['home','ads','jobs','catalog','account','myposts','submit','detail','admin'];
 
 window.goScreen = (name) => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
