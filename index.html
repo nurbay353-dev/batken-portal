@@ -694,7 +694,7 @@ function renderHomeAds(ads) {
       <div class="ad-card-img${a.imageUrl?' has-img':''}" style="${a.imageUrl?'':'background:linear-gradient(135deg,#FFEDD5,#FED7AA)'}">${a.imageUrl?`<img src="${a.imageUrl}" class="card-img-real">`:(a.emoji||'📦')}</div>
       <div class="ad-card-body">
         ${a.vip?'<div class="vip-dot">⭐ VIP</div>':''}
-        <div class="ad-cat-tag">${a.category||''}</div>
+        <div class="ad-cat-tag">${a.category||''}${a.subcategory?' · '+a.subcategory:''}</div>
         <div class="ad-title-s">${a.title}</div>
         ${a.price?`<div class="ad-price-s">${a.price}</div>`:''}
         <div class="ad-meta-s">📍 ${a.location||'Баткен'}</div>
@@ -753,7 +753,7 @@ function renderAds(ads) {
         ${a.vip?'<div class="vip-dot" style="margin-bottom:5px">⭐ VIP</div>':''}
         ${soldBadge}
         <div class="list-title">${a.title}</div>
-        <div class="list-sub">${a.category||''}</div>
+        <div class="list-sub">${a.category||''}${a.subcategory?' · '+a.subcategory:''}</div>
         ${a.price?`<div class="list-price">${a.price}</div>`:''}
         <div class="list-meta"><span>📍 ${a.location||'Баткен'}</span><span>${timeAgo(a.createdAt)}</span></div>
       </div>
@@ -858,7 +858,7 @@ window._showDetail = (type, id) => {
         <div class="detail-title">${item.title}</div>
         ${item.price?`<div class="detail-price">${item.price}</div>`:''}
         <div class="detail-row"><span class="detail-row-label">📍 Жайгашкан жери</span><span>${item.location||'Баткен'}</span></div>
-        <div class="detail-row"><span class="detail-row-label">🗂 Категория</span><span>${item.category||'—'}</span></div>
+        <div class="detail-row"><span class="detail-row-label">🗂 Категория</span><span>${item.category||'—'}${item.subcategory?' · '+item.subcategory:''}</span></div>
         <div class="detail-row"><span class="detail-row-label">📅 Дата</span><span>${timeAgo(item.createdAt)}</span></div>
         ${item.description?`<div class="detail-content">${item.description}</div>`:''}
         ${item.phone?`
@@ -938,7 +938,32 @@ window._goSubmit = async (type) => {
     sel.innerHTML = '<option value="">— Категория тандаңыз —</option>' +
       cats.map(c => `<option value="${c.name}">${c.emoji||''} ${c.name}</option>`).join('');
   }
+  const subcatWrap = document.getElementById('subcat-wrap');
+  if (subcatWrap) {
+    subcatWrap.style.display = 'none';
+    document.getElementById('f-subcat').innerHTML = '<option value="">— Субкатегория тандаңыз —</option>';
+  }
   goScreen('submit');
+};
+
+// ─── КАТЕГОРИЯ ӨЗГӨРГӨНДӨ СУБКАТЕГОРИЯНЫ ТОЛТУРУУ ────────────
+window.onCategoryChange = () => {
+  const catName = document.getElementById('f-cat')?.value || '';
+  const wrap = document.getElementById('subcat-wrap');
+  const subSel = document.getElementById('f-subcat');
+  if (!wrap || !subSel) return;
+  const catType = window._submitType === 'ad' ? 'ads' : window._submitType === 'job' ? 'jobs' : 'orgs';
+  const catList = window._cats[catType] || [];
+  const catObj = catList.find(c => c.name === catName);
+  const subs = catObj?.subcategories || [];
+  if (subs.length) {
+    wrap.style.display = 'block';
+    subSel.innerHTML = '<option value="">— Субкатегория тандаңыз —</option>' +
+      subs.map(s => `<option value="${s}">${s}</option>`).join('');
+  } else {
+    wrap.style.display = 'none';
+    subSel.innerHTML = '<option value="">— Субкатегория тандаңыз —</option>';
+  }
 };
 
 // ─── СҮРӨТ ЖҮКТӨӨ ────────────────────────────────────────────
@@ -1042,9 +1067,15 @@ function getFormHTML(type) {
     <label class="field-label">Баасы</label>
     <input class="field-input" id="f-price" placeholder="мис: 850 000 сом">
     <label class="field-label">Категория</label>
-    <select class="field-select" id="f-cat">
+    <select class="field-select" id="f-cat" onchange="onCategoryChange()">
       <option value="">— Жүктөлүүдө... —</option>
     </select>
+    <div id="subcat-wrap" style="display:none">
+      <label class="field-label">Субкатегория</label>
+      <select class="field-select" id="f-subcat">
+        <option value="">— Субкатегория тандаңыз —</option>
+      </select>
+    </div>
     <label class="field-label">Жайгашкан жери</label>
     <input class="field-input" id="f-location" placeholder="мис: Баткен борбору">
     <label class="field-label">Телефон</label>
@@ -1150,6 +1181,7 @@ window._doSubmit = async () => {
   try {
     // Эмодзини категориядан автоматтык алабыз
     const catName = document.getElementById('f-cat')?.value || '';
+    const subcatName = document.getElementById('f-subcat')?.value || '';
     const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : 'orgs';
     const catList = window._cats[catType] || [];
     const catObj = catList.find(c => c.name === catName);
@@ -1171,6 +1203,7 @@ window._doSubmit = async () => {
       postStatus: 'active',
       emoji: autoEmoji,
       category: catName,
+      subcategory: subcatName,
       description: document.getElementById('f-desc')?.value || '',
       phone: document.getElementById('f-phone')?.value || '',
       location: document.getElementById('f-location')?.value || '',
