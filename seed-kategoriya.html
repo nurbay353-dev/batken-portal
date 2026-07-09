@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Категорияларды жүктөө — Баткен Portal</title>
+<style>
+  :root{
+    --or:#C2410C;--or-l:#FFEDD5;--or-d:#9A3412;
+    --gr:#15803D;--gr-l:#DCFCE7;
+    --bg:#F8FAFC;--card:#fff;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+    --r:14px;--sh:0 2px 16px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:20px;max-width:720px;margin:0 auto}
+  h1{font-size:1.3rem;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:.85rem;margin-bottom:20px}
+  .card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:18px;margin-bottom:16px}
+  .field-label{display:block;font-size:.8rem;font-weight:600;margin-bottom:5px}
+  .field-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.9rem;outline:none;margin-bottom:12px}
+  .btn{width:100%;background:var(--or);color:#fff;border:none;padding:13px;border-radius:11px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:8px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-outline{background:#fff;color:var(--or);border:1.5px solid var(--or)}
+  .btn-danger{background:#fff;color:#DC2626;border:1.5px solid #DC2626}
+  .pill{display:inline-block;background:var(--or-l);color:var(--or-d);font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:10px}
+  .cat-row{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .cat-row-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;margin-bottom:4px}
+  .cat-row-sub{font-size:.78rem;color:var(--muted);line-height:1.5}
+  #log{background:#0F172A;color:#A7F3D0;font-family:monospace;font-size:.78rem;border-radius:10px;padding:12px;max-height:220px;overflow-y:auto;white-space:pre-wrap;display:none}
+  .status-line{font-size:.82rem;color:var(--muted);margin-bottom:10px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+
+<h1>🗂 Категорияларды жүктөө</h1>
+<div class="sub">Баткен Portal — жарнама категориялары жана субкатегориялары (Firestore: <code>categories_ad</code>)</div>
+
+<!-- LOGIN -->
+<div class="card" id="login-card">
+  <span class="pill">1-кадам</span>
+  <label class="field-label">Admin email</label>
+  <input class="field-input" id="li-email" type="email" placeholder="batkenlist@gmail.com">
+  <label class="field-label">Сырсөз</label>
+  <input class="field-input" id="li-pass" type="password" placeholder="••••••••">
+  <button class="btn" id="login-btn" onclick="doLogin()">Кирүү</button>
+  <div class="status-line" id="login-status"></div>
+</div>
+
+<!-- SEED -->
+<div class="card hidden" id="seed-card">
+  <span class="pill">2-кадам</span>
+  <div class="status-line" id="whoami"></div>
+  <div class="status-line" id="existing-status">Firestore'догу учурдагы категориялар текшерилүүдө...</div>
+  <button class="btn" id="seed-btn" onclick="seedCategories()">📥 Категорияларды жазуу / жаңылоо</button>
+  <button class="btn btn-danger" id="wipe-btn" onclick="wipeCategories()">🗑 Бардык категорияларды өчүрүү</button>
+  <div id="log"></div>
+</div>
+
+<!-- PREVIEW -->
+<div class="card">
+  <span class="pill" style="background:var(--gr-l);color:var(--gr)">Алдын ала көрүү</span>
+  <div id="preview"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ✅ Негизги index.html файлындагы эле Firebase проекти
+const firebaseConfig = {
+  apiKey: "AIzaSyAfUm1YzNbRxzOYclFhr1v1g-xSo6MkN_o",
+  authDomain: "batken-portal.firebaseapp.com",
+  projectId: "batken-portal",
+  storageBucket: "batken-portal.firebasestorage.app",
+  messagingSenderId: "705755102053",
+  appId: "1:705755102053:web:8ce35ad4fffb68ff4c7f8c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ─── ЖАРНАМА КАТЕГОРИЯЛАРЫ (Lalafo стилинде, кыргызча) ───────
+const CATEGORIES = [
+  { id: 'transport', name: 'Унаа-техника', emoji: '🚗', order: 1, subcategories: [
+    'Жеңил унаалар', 'Жүк унаалары жана автобустар', 'Мотоциклдер / Мопеддер',
+    'Унаа бөлүктөрү жана аксессуарлар', 'Унаа тейлөө кызматтары'
+  ]},
+  { id: 'realestate', name: 'Кыймылсыз мүлк', emoji: '🏠', order: 2, subcategories: [
+    'Батир сатылат', 'Батир ижарага', 'Үй сатылат', 'Үй ижарага',
+    'Жер тилкеси', 'Коммерциялык мүлк'
+  ]},
+  { id: 'electronics', name: 'Электроника', emoji: '📱', order: 3, subcategories: [
+    'Телефондор', 'Ноутбук жана компьютерлер', 'Планшеттер',
+    'Теле, аудио, видео', 'Оюн консолдору', 'Аксессуарлар'
+  ]},
+  { id: 'clothing', name: 'Кийим жана буюмдар', emoji: '👗', order: 4, subcategories: [
+    'Аялдар кийими', 'Эркектер кийими', 'Балдар кийими',
+    'Бут кийим', 'Саат жана зер буюмдар', 'Сумкалар'
+  ]},
+  { id: 'home', name: 'Үй жана бакча үчүн', emoji: '🛋️', order: 5, subcategories: [
+    'Эмерек', 'Тиричилик техникасы', 'Идиш-аяк',
+    'Ремонт жана курулуш материалдары', 'Бак-дарак, багбандык'
+  ]},
+  { id: 'animals', name: 'Жаныбарлар', emoji: '🐾', order: 6, subcategories: [
+    'Иттер', 'Мышыктар', 'Канаттуулар', 'Башка жаныбарлар', 'Жаныбарлар үчүн буюмдар'
+  ]},
+  { id: 'kids', name: 'Балдар дүйнөсү', emoji: '👶', order: 7, subcategories: [
+    'Балдар кийими', 'Оюнчуктар', 'Коляска жана автокресло', 'Мектеп буюмдары'
+  ]},
+  { id: 'hobby', name: 'Хобби жана эс алуу', emoji: '⚽', order: 8, subcategories: [
+    'Спорт буюмдары', 'Музыкалык аспаптар', 'Китептер', 'Велосипеддер', 'Туризм жабдуулары'
+  ]},
+  { id: 'services', name: 'Кызматтар', emoji: '🛠️', order: 9, subcategories: [
+    'Ремонт кызматтары', 'Билим берүү / курстар', 'Сулуулук жана ден соолук',
+    'Транспорт кызматтары', 'Башка кызматтар'
+  ]},
+  { id: 'business', name: 'Бизнес жана жабдуулар', emoji: '🏢', order: 10, subcategories: [
+    'Соода жабдуулары', 'Офис буюмдары', 'Айыл чарба техникасы', 'Курулуш техникасы'
+  ]}
+];
+
+// ─── Алдын ала көрүү ─────────────────────────────────────────
+document.getElementById('preview').innerHTML = CATEGORIES.map(c => `
+  <div class="cat-row">
+    <div class="cat-row-h"><span>${c.emoji}</span><span>${c.name}</span></div>
+    <div class="cat-row-sub">${c.subcategories.join(' · ')}</div>
+  </div>
+`).join('');
+
+// ─── Log жардамчысы ──────────────────────────────────────────
+const logEl = document.getElementById('log');
+function log(msg) {
+  logEl.style.display = 'block';
+  logEl.textContent += msg + '\n';
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// ─── Кирүү ───────────────────────────────────────────────────
+window.doLogin = async () => {
+  const email = document.getElementById('li-email').value.trim();
+  const pass = document.getElementById('li-pass').value;
+  const statusEl = document.getElementById('login-status');
+  const btn = document.getElementById('login-btn');
+  if (!email || !pass) { statusEl.textContent = '⚠️ Email жана сырсөздү толтуруңуз'; return; }
+  btn.disabled = true; btn.textContent = 'Текшерилүүдө...';
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    document.getElementById('login-card').classList.add('hidden');
+    document.getElementById('seed-card').classList.remove('hidden');
+    document.getElementById('whoami').textContent = '✅ Киргизилди: ' + cred.user.email;
+    checkExisting();
+  } catch(e) {
+    statusEl.textContent = '❌ Ката: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Кирүү';
+  }
+};
+
+async function checkExisting() {
+  const el = document.getElementById('existing-status');
+  try {
+    const snap = await getDocs(collection(db, 'categories_ad'));
+    el.textContent = snap.size > 0
+      ? `ℹ️ Firestore'до учурда ${snap.size} категория бар. "Жазуу" баскычы аларды жаңылайт (үстүнөн жазат), кайталанбайт.`
+      : 'ℹ️ Firestore\'до азырынча категория жок. Жазуу үчүн даяр.';
+  } catch(e) {
+    el.textContent = '⚠️ Текшерүүдө ката: ' + e.message;
+  }
+}
+
+// ─── Seed кылуу ──────────────────────────────────────────────
+window.seedCategories = async () => {
+  const btn = document.getElementById('seed-btn');
+  btn.disabled = true; btn.textContent = 'Жазылууда...';
+  log('▶ Жазуу башталды...');
+  let ok = 0, fail = 0;
+  for (const cat of CATEGORIES) {
+    try {
+      await setDoc(doc(db, 'categories_ad', cat.id), {
+        name: cat.name,
+        emoji: cat.emoji,
+        order: cat.order,
+        subcategories: cat.subcategories
+      });
+      log(`  ✅ ${cat.emoji} ${cat.name} (${cat.subcategories.length} субкатегория)`);
+      ok++;
+    } catch(e) {
+      log(`  ❌ ${cat.name}: ${e.message}`);
+      fail++;
+    }
+  }
+  log(`▶ Бүттү. Ийгиликтүү: ${ok}, ката: ${fail}`);
+  btn.disabled = false; btn.textContent = '📥 Категорияларды жазуу / жаңылоо';
+  checkExisting();
+};
+
+// ─── Тазалоо ─────────────────────────────────────────────────
+window.wipeCategories = async () => {
+  if (!confirm('Бардык категорияларды өчүрөсүзбү? Бул кайтарылгыс аракет.')) return;
+  const btn = document.getElementById('wipe-btn');
+  btn.disabled = true; btn.textContent = 'Өчүрүлүүдө...';
+  log('▶ Өчүрүү башталды...');
+  try {
+    const snap = await getDocs(collection(db, 'categories_ad'));
+    for (const d of snap.docs) {
+      await deleteDoc(doc(db, 'categories_ad', d.id));
+      log(`  🗑 ${d.id} өчүрүлдү`);
+    }
+    log(`▶ Бүттү. Жалпы өчүрүлгөн: ${snap.size}`);
+  } catch(e) {
+    log(`  ❌ Ката: ${e.message}`);
+  } finally {
+    btn.disabled = false; btn.textContent = '🗑 Бардык категорияларды өчүрүү';
+    checkExisting();
+  }
+};
+</script>
+</body>
+</html>
