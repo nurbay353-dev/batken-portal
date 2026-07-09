@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Субкатегория кошуу — Баткен Portal</title>
+<style>
+  :root{--or:#C2410C;--or-l:#FFEDD5;--bg:#F8FAFC;--card:#fff;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:20px;max-width:680px;margin:0 auto}
+  h1{font-size:1.25rem;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:.85rem;margin-bottom:20px}
+  .card{background:var(--card);border-radius:14px;box-shadow:0 2px 16px rgba(0,0,0,.08);padding:18px;margin-bottom:16px}
+  .btn{width:100%;background:var(--or);color:#fff;border:none;padding:13px;border-radius:11px;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:8px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .pill{display:inline-block;background:var(--or-l);color:var(--or);font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:20px;margin-bottom:10px}
+  .warn{background:#FEF3C7;color:#92400E;border-radius:10px;padding:10px 12px;font-size:.82rem;margin-bottom:14px}
+  .cat-row{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .cat-row-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;margin-bottom:4px}
+  .cat-row-sub{font-size:.78rem;color:var(--muted);line-height:1.5}
+  #log{background:#0F172A;color:#A7F3D0;font-family:monospace;font-size:.78rem;border-radius:10px;padding:12px;max-height:300px;overflow-y:auto;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+
+<h1>➕ Субкатегория кошуу</h1>
+<div class="sub">Учурдагы жарнама категорияларына тийбестен, алардын ичине субкатегория кошуу</div>
+
+<div class="warn">
+  ⚠️ Бул курал сиздин Firestore'догу <code>categories_ads</code> категорияларынын <strong>атын да, эмодзисин да өчүрбөйт/өзгөртпөйт</strong>. Ал тек гана ар бир категорияга <code>subcategories</code> деген жаңы талааны кошот (аты дал келсе).
+</div>
+
+<div class="card">
+  <span class="pill">Аракет</span>
+  <button class="btn" id="run-btn" onclick="run()">➕ Субкатегорияларды кошуу</button>
+  <div id="log"></div>
+</div>
+
+<div class="card">
+  <span class="pill" style="background:#DCFCE7;color:#15803D">Алдын ала көрүү</span>
+  <div id="preview"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAfUm1YzNbRxzOYclFhr1v1g-xSo6MkN_o",
+  authDomain: "batken-portal.firebaseapp.com",
+  projectId: "batken-portal",
+  storageBucket: "batken-portal.firebasestorage.app",
+  messagingSenderId: "705755102053",
+  appId: "1:705755102053:web:8ce35ad4fffb68ff4c7f8c"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ─── Учурдагы 15 категориянын so НАМЕ боюнча субкатегориялары ─
+// (аталыштар seed-categories.html файлындагыдай так)
+const SUBCATS = {
+  'Кыймылсыз мүлк': ['Батир сатылат', 'Батир ижарага', 'Үй сатылат', 'Үй ижарага', 'Жер тилкеси'],
+  'Унаалар': ['Жеңил унаалар', 'Мотоциклдер', 'Унаа бөлүктөрү жана аксессуарлар'],
+  'Электроника': ['Телефондор', 'Компьютер / Ноутбук', 'Башка техника'],
+  'Кийим жана аяк кийим': ['Аялдар кийими', 'Эркектер кийими', 'Балдар кийими', 'Бут кийим'],
+  'Айыл чарба': ['Тоокулук', 'Уруктар жана өсүмдүктөр', 'Айыл чарба техникасы'],
+  'Малчылык': ['Ири мүйүздүү мал', 'Майда мал', 'Мал азыктары'],
+  'Курулуш материалдары': ['Кум-шагыл', 'Кирпич / блок', 'Жабуу материалдары'],
+  'Эмеректер': ['Диван / кресло', 'Шкаф / тумбочка', 'Керебет'],
+  'Тамак-аш азыктары': ['Жашылча-жемиш', 'Эт азыктары', 'Ун азыктары'],
+  'Балдар буюмдары': ['Оюнчуктар', 'Коляска жана автокресло', 'Балдар кийими'],
+  'Спорт товарлары': ['Велосипед', 'Тренажёр', 'Спорт кийими'],
+  'Кызматтар': ['Ремонт кызматтары', 'Билим берүү', 'Транспорт кызматтары'],
+  'Жаныбарлар': ['Иттер', 'Мышыктар', 'Канаттуулар'],
+  'Бизнес жана жабдуулар': ['Соода жабдуулары', 'Офис буюмдары', 'Курулуш техникасы'],
+  'Башка': []
+};
+
+// ─── Алдын ала көрүү ─────────────────────────────────────────
+document.getElementById('preview').innerHTML = Object.entries(SUBCATS).map(([name, subs]) => `
+  <div class="cat-row">
+    <div class="cat-row-h">${name}</div>
+    <div class="cat-row-sub">${subs.length ? subs.join(' · ') : '— субкатегория жок —'}</div>
+  </div>
+`).join('');
+
+const logEl = document.getElementById('log');
+function log(msg) {
+  logEl.style.display = 'block';
+  logEl.textContent += msg + '\n';
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+window.run = async () => {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true; btn.textContent = 'Аткарылууда...';
+  log('▶ Firestore\'дон categories_ads окулууда...');
+
+  try {
+    const snap = await getDocs(collection(db, 'categories_ads'));
+    log(`  ℹ️ Табылды: ${snap.size} категория`);
+
+    let updated = 0, skipped = 0, notFound = 0;
+    const foundNames = new Set();
+
+    for (const d of snap.docs) {
+      const data = d.data();
+      const name = data.name;
+      foundNames.add(name);
+      if (Object.prototype.hasOwnProperty.call(SUBCATS, name)) {
+        const subs = SUBCATS[name];
+        try {
+          await updateDoc(doc(db, 'categories_ads', d.id), { subcategories: subs });
+          log(`  ✅ ${data.emoji || ''} ${name} → ${subs.length} субкатегория кошулду (аты/эмодзиси өзгөрбөдү)`);
+          updated++;
+        } catch(e) {
+          log(`  ❌ ${name}: ${e.message}`);
+        }
+      } else {
+        log(`  ⏭ ${name} — тизмеде жок, өткөрүлдү (тийилген жок)`);
+        skipped++;
+      }
+    }
+
+    // Биздин тизмедеги, бирок Firestore'до табылбаган аталыштар
+    for (const name of Object.keys(SUBCATS)) {
+      if (!foundNames.has(name)) {
+        log(`  ⚠️ "${name}" Firestore'до табылган жок — эч нерсе жасалган жок`);
+        notFound++;
+      }
+    }
+
+    log(`▶ Бүттү. Жаңыланды: ${updated}, өткөрүлдү: ${skipped}, табылбады: ${notFound}`);
+  } catch(e) {
+    log(`  ❌ Жалпы ката: ${e.message}`);
+  } finally {
+    btn.disabled = false; btn.textContent = '➕ Субкатегорияларды кошуу';
+  }
+};
+</script>
+</body>
+</html>
