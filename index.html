@@ -71,6 +71,14 @@
 <div class="quick-icon" style="background:var(--pu-l)">🏢</div>
 <div class="quick-label">Ишканалар</div>
 </button>
+     <button class="quick-item" onclick="goScreen('events')">
+<div class="quick-icon" style="background:#FCE7F3">🎭</div>
+<div class="quick-label">Афиша</div>
+</button>
+     <button class="quick-item" onclick="goScreen('lostfound')">
+<div class="quick-icon" style="background:#DBEAFE">🧳</div>
+<div class="quick-label">Табылгалар</div>
+</button>
      <button class="quick-item" onclick="goScreen('account')">
 <div class="quick-icon" style="background:var(--am-l)">👤</div>
 <div class="quick-label">Аккаунт</div>
@@ -86,6 +94,26 @@
    </div>
    <div class="hscroll" id="home-ads-scroll">
     <div class="spinner"></div>
+   </div>
+   <div class="divider"></div>
+   <div class="sec">
+    <div class="sec-hdr">
+     <div class="sec-title">🎭 Жакынкы иш-чаралар</div>
+     <button class="sec-more" onclick="goScreen('events')">Баары →</button>
+    </div>
+   </div>
+   <div class="hscroll" id="home-events-scroll">
+    <div class="spinner"></div>
+   </div>
+   <div class="divider"></div>
+   <div class="sec">
+    <div class="sec-hdr">
+     <div class="sec-title">🧳 Табылгалар бюросу</div>
+     <button class="sec-more" onclick="goScreen('lostfound')">Баары →</button>
+    </div>
+    <div id="home-lostfound-list">
+     <div class="spinner"></div>
+    </div>
    </div>
    <div class="divider"></div>
    <div class="sec">
@@ -119,6 +147,38 @@
    </div>
    <div class="filter-bar" id="ads-filters"></div>
    <div class="list-wrap" id="ads-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
+  <!-- ==================== ТАБЫЛГАЛАР БЮРОСУ ==================== -->
+  <div class="screen" id="screen-lostfound">
+   <div class="top-bar">
+    <div class="top-bar-title">🧳 Табылгалар бюросу</div>
+    <button onclick="goSubmit('lost')" style="background:#2563EB;color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Кошуу</button>
+   </div>
+   <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="🔍 Табылга издөө..." id="lostfound-search" oninput="filterLostFound()">
+   </div>
+   <div class="filter-bar" id="lostfound-filters">
+    <button class="filter-chip active" onclick="setLfTypeFilter(this,'')">Баары</button>
+    <button class="filter-chip" onclick="setLfTypeFilter(this,'lost')">😟 Жоголду</button>
+    <button class="filter-chip" onclick="setLfTypeFilter(this,'found')">😊 Табылды</button>
+   </div>
+   <div class="list-wrap" id="lostfound-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
+  <!-- ==================== EVENTS (АФИША) ==================== -->
+  <div class="screen" id="screen-events">
+   <div class="top-bar">
+    <div class="top-bar-title">🎭 Афиша</div>
+    <button onclick="goSubmit('event')" style="background:#DB2777;color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Кошуу</button>
+   </div>
+   <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="🔍 Иш-чара издөө..." id="events-search" oninput="filterEvents()">
+   </div>
+   <div class="filter-bar" id="events-filters"></div>
+   <div class="list-wrap" id="events-list">
     <div class="spinner"></div>
    </div>
   </div>
@@ -272,6 +332,8 @@ Admin панели
     <button class="admin-tab active" onclick="switchAdminTab('ads')" id="atab-ads">📋 Жарнамалар</button>
     <button class="admin-tab" onclick="switchAdminTab('jobs')" id="atab-jobs">💼 Жумуш</button>
     <button class="admin-tab" onclick="switchAdminTab('orgs')" id="atab-orgs">🏢 Ишканалар</button>
+    <button class="admin-tab" onclick="switchAdminTab('events')" id="atab-events">🎭 Афиша</button>
+    <button class="admin-tab" onclick="switchAdminTab('lostfound')" id="atab-lostfound">🧳 Табылгалар</button>
    </div>
    <div class="list-wrap" style="padding-top:12px" id="admin-list">
     <div class="spinner"></div>
@@ -289,6 +351,8 @@ Admin панели
     <button class="admin-tab active" onclick="switchMyTab('ads')" id="mytab-ads">📋 Жарнамалар</button>
     <button class="admin-tab" onclick="switchMyTab('jobs')" id="mytab-jobs">💼 Жумуш</button>
     <button class="admin-tab" onclick="switchMyTab('orgs')" id="mytab-orgs">🏢 Ишканалар</button>
+    <button class="admin-tab" onclick="switchMyTab('events')" id="mytab-events">🎭 Афиша</button>
+    <button class="admin-tab" onclick="switchMyTab('lostfound')" id="mytab-lostfound">🧳 Табылгалар</button>
    </div>
    <div class="list-wrap" style="padding-top:12px" id="myposts-list">
     <div class="spinner"></div>
@@ -312,6 +376,10 @@ Admin панели
   <button class="nav-item" id="nav-catalog" onclick="goScreen('catalog')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
 Ишканалар
+</button>
+  <button class="nav-item" id="nav-events" onclick="goScreen('events')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="12" cy="15" r="2"/></svg>
+Афиша
 </button>
   <button class="nav-item" id="nav-account" onclick="goScreen('account')">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -384,7 +452,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .divider{height:6px;background:var(--bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
 
 /* QUICK ACTIONS */
-.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .quick-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;background:none;border:none;padding:0}
 .quick-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
 .quick-label{font-size:.68rem;font-weight:600;color:var(--text);text-align:center;line-height:1.3}
@@ -685,6 +753,39 @@ async function loadOrgs() {
   }
 }
 
+async function loadEvents() {
+  try {
+    const snap = await getDocs(collection(db,'events'));
+    window._allEvents = snap.docs.map(d => ({id:d.id,...d.data()}))
+      .filter(x => x.status === 'approved')
+      .sort((a,b)=>(a.eventDate||'').localeCompare(b.eventDate||''));
+    renderEvents(window._allEvents);
+    renderHomeEvents(window._allEvents.slice(0,6));
+    const cats = [...new Set(window._allEvents.map(x=>x.category).filter(Boolean))];
+    await loadCatsForForm('events');
+    renderFilters('events-filters', cats, filterEvents, 'events');
+  } catch(e){
+    console.error('loadEvents error:',e);
+    document.getElementById('events-list').innerHTML = '<div class="empty-state"><div>🎭</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>';
+  }
+}
+
+window._lfTypeFilter = '';
+async function loadLostFound() {
+  try {
+    const snap = await getDocs(collection(db,'lostfound'));
+    window._allLostFound = snap.docs.map(d => ({id:d.id,...d.data()}))
+      .filter(x => x.status === 'approved')
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderLostFound(window._allLostFound);
+    renderHomeLostFound(window._allLostFound.slice(0,3));
+    await loadCatsForForm('lostfound');
+  } catch(e){
+    console.error('loadLostFound error:',e);
+    document.getElementById('lostfound-list').innerHTML = '<div class="empty-state"><div>🧳</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>';
+  }
+}
+
 // ─── RENDER ──────────────────────────────────────────────────
 function renderHomeAds(ads) {
   const el = document.getElementById('home-ads-scroll');
@@ -698,6 +799,47 @@ function renderHomeAds(ads) {
         <div class="ad-title-s">${a.title}</div>
         ${a.price?`<div class="ad-price-s">${a.price}</div>`:''}
         <div class="ad-meta-s">📍 ${a.location||'Баткен'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function formatEventDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const months = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${d.getDate()} ${months[d.getMonth()]}, ${hh}:${mm}`;
+}
+
+function renderHomeEvents(events) {
+  const el = document.getElementById('home-events-scroll');
+  if (!el) return;
+  if (!events.length) { el.innerHTML = '<div class="empty-state" style="min-width:200px"><div>🎭</div><p>Иш-чара жок</p></div>'; return; }
+  el.innerHTML = events.map(x => `
+    <div class="ad-card-h" onclick="showDetail('event','${x.id}')">
+      <div class="ad-card-img${x.imageUrl?' has-img':''}" style="${x.imageUrl?'':'background:linear-gradient(135deg,#FCE7F3,#FBCFE8)'}">${x.imageUrl?`<img src="${x.imageUrl}" class="card-img-real">`:(x.emoji||'🎭')}</div>
+      <div class="ad-card-body">
+        <div class="ad-cat-tag">${x.category||''}${x.subcategory?' · '+x.subcategory:''}</div>
+        <div class="ad-title-s">${x.title}</div>
+        ${x.eventDate?`<div class="ad-price-s">📅 ${formatEventDate(x.eventDate)}</div>`:''}
+        <div class="ad-meta-s">📍 ${x.venue||'Баткен'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderHomeLostFound(items) {
+  const el = document.getElementById('home-lostfound-list');
+  if (!el) return;
+  if (!items.length) { el.innerHTML = '<div class="empty-state"><div>🧳</div><p>Табылга жок</p></div>'; return; }
+  el.innerHTML = items.map(x => `
+    <div class="list-card" onclick="showDetail('lost','${x.id}')">
+      <div class="list-icon${x.imageUrl?' has-img':''}" style="${x.imageUrl?'':(x.lfType==='found'?'background:#DCFCE7':'background:#FEE2E2')}">${x.imageUrl?`<img src="${x.imageUrl}">`:(x.emoji||'🧳')}</div>
+      <div class="list-body">
+        <div class="list-title">${x.lfType==='found'?'😊 Табылды':'😟 Жоголду'} — ${x.title}</div>
+        <div class="list-sub">${x.category||''}</div>
+        <div class="list-meta"><span>📍 ${x.location||'Баткен'}</span></div>
       </div>
     </div>`).join('');
 }
@@ -805,6 +947,37 @@ function renderOrgs(orgs) {
   }).join('');
 }
 
+function renderEvents(events) {
+  const el = document.getElementById('events-list');
+  if (!el) return;
+  if (!events.length) { el.innerHTML = '<div class="empty-state"><div>🎭</div><p>Иш-чара табылган жок</p></div>'; return; }
+  el.innerHTML = events.map(x => `
+    <div class="list-card" onclick="showDetail('event','${x.id}')">
+      <div class="list-icon${x.imageUrl?' has-img':''}" style="${x.imageUrl?'':'background:#FCE7F3'}">${x.imageUrl?`<img src="${x.imageUrl}">`:(x.emoji||'🎭')}</div>
+      <div class="list-body">
+        <div class="list-title">${x.title}</div>
+        <div class="list-sub">${x.category||''}${x.subcategory?' · '+x.subcategory:''}</div>
+        ${x.eventDate?`<div class="list-price">📅 ${formatEventDate(x.eventDate)}</div>`:''}
+        <div class="list-meta"><span>📍 ${x.venue||'Баткен'}</span>${x.price?`<span>${x.price}</span>`:''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderLostFound(items) {
+  const el = document.getElementById('lostfound-list');
+  if (!el) return;
+  if (!items.length) { el.innerHTML = '<div class="empty-state"><div>🧳</div><p>Табылга табылган жок</p></div>'; return; }
+  el.innerHTML = items.map(x => `
+    <div class="list-card" onclick="showDetail('lost','${x.id}')">
+      <div class="list-icon${x.imageUrl?' has-img':''}" style="${x.imageUrl?'':(x.lfType==='found'?'background:#DCFCE7':'background:#FEE2E2')}">${x.imageUrl?`<img src="${x.imageUrl}">`:(x.emoji||'🧳')}</div>
+      <div class="list-body">
+        <div class="list-title">${x.lfType==='found'?'😊 Табылды':'😟 Жоголду'} — ${x.title}</div>
+        <div class="list-sub">${x.category||''}</div>
+        <div class="list-meta"><span>📍 ${x.location||'Баткен'}</span>${x.lfDate?`<span>📅 ${x.lfDate}</span>`:''}</div>
+      </div>
+    </div>`).join('');
+}
+
 function renderFilters(containerId, cats, filterFn, catType) {
   const el = document.getElementById(containerId);
   const savedCats = (window._cats && window._cats[catType]) || [];
@@ -843,11 +1016,31 @@ window._filterOrgs = (cat) => {
   if (s) arr = arr.filter(o => o.title.toLowerCase().includes(s) || (o.address||'').toLowerCase().includes(s));
   renderOrgs(arr);
 };
+window._filterEvents = (cat) => {
+  const s = document.getElementById('events-search').value.toLowerCase();
+  let arr = window._allEvents || [];
+  if (cat) arr = arr.filter(x => x.category === cat);
+  if (s) arr = arr.filter(x => x.title.toLowerCase().includes(s) || (x.venue||'').toLowerCase().includes(s));
+  renderEvents(arr);
+};
+window._filterLostFound = () => {
+  const s = document.getElementById('lostfound-search').value.toLowerCase();
+  let arr = window._allLostFound || [];
+  if (window._lfTypeFilter) arr = arr.filter(x => x.lfType === window._lfTypeFilter);
+  if (s) arr = arr.filter(x => x.title.toLowerCase().includes(s) || (x.location||'').toLowerCase().includes(s));
+  renderLostFound(arr);
+};
+window.setLfTypeFilter = (btn, val) => {
+  document.querySelectorAll('#lostfound-filters .filter-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  window._lfTypeFilter = val;
+  window._filterLostFound();
+};
 
 // ─── DETAIL ──────────────────────────────────────────────────
 window._showDetail = (type, id) => {
   window._prevScreen = document.querySelector('.screen.active').id.replace('screen-','');
-  const item = (type==='ad'?window._allAds:type==='job'?window._allJobs:window._allOrgs).find(x=>x.id===id);
+  const item = (type==='ad'?window._allAds:type==='job'?window._allJobs:type==='event'?window._allEvents:type==='lost'?window._allLostFound:window._allOrgs).find(x=>x.id===id);
   if (!item) return;
   const el = document.getElementById('detail-content');
   if (type === 'ad') {
@@ -883,6 +1076,35 @@ window._showDetail = (type, id) => {
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
           <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 Байланышуу</button>
           <a href="#" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0" onclick="this.href='https://wa.me/'+formatWhatsApp('${item.phone}')">📱 WhatsApp жазуу</a>
+        </div>`:''}
+      </div>`;
+  } else if (type === 'event') {
+    el.innerHTML = `
+      <div class="detail-img" style="${item.imageUrl?'background:none':'background:linear-gradient(135deg,#FCE7F3,#FBCFE8)'}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'🎭')}</div>
+      <div class="detail-body">
+        <div class="detail-title">${item.title}</div>
+        ${item.price?`<div class="detail-price">${item.price}</div>`:''}
+        ${item.eventDate?`<div class="detail-row"><span class="detail-row-label">📅 Датасы</span><span>${formatEventDate(item.eventDate)}</span></div>`:''}
+        <div class="detail-row"><span class="detail-row-label">📍 Орду</span><span>${item.venue||'Баткен'}</span></div>
+        <div class="detail-row"><span class="detail-row-label">🗂 Категория</span><span>${item.category||'—'}${item.subcategory?' · '+item.subcategory:''}</span></div>
+        ${item.description?`<div class="detail-content">${item.description}</div>`:''}
+        ${item.phone?`
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 ${item.phone}</button>
+        </div>`:''}
+      </div>`;
+  } else if (type === 'lost') {
+    el.innerHTML = `
+      <div class="detail-img" style="${item.imageUrl?'background:none':(item.lfType==='found'?'background:linear-gradient(135deg,#DCFCE7,#BBF7D0)':'background:linear-gradient(135deg,#FEE2E2,#FECACA)')}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'🧳')}</div>
+      <div class="detail-body">
+        <div class="detail-title">${item.lfType==='found'?'😊 Табылды':'😟 Жоголду'} — ${item.title}</div>
+        <div class="detail-row"><span class="detail-row-label">📍 Жери</span><span>${item.location||'Баткен'}</span></div>
+        ${item.lfDate?`<div class="detail-row"><span class="detail-row-label">📅 Датасы</span><span>${item.lfDate}</span></div>`:''}
+        <div class="detail-row"><span class="detail-row-label">🗂 Категория</span><span>${item.category||'—'}</span></div>
+        ${item.description?`<div class="detail-content">${item.description}</div>`:''}
+        ${item.phone?`
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 ${item.phone}</button>
         </div>`:''}
       </div>`;
   } else {
@@ -925,12 +1147,12 @@ window._goSubmit = async (type) => {
   if (!window._currentUser) { goScreen('account'); window._showToast('Алгач кириңиз'); return; }
   window._submitType = type;
   window._pendingImageBlob = null;
-  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу'};
+  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу', event:'🎭 Иш-чара кошуу', lost:'🧳 Табылга кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
   document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
   document.getElementById('submit-error').style.display = 'none';
   // Кэшти тазалап Firebase'ден жаңы жүктөйбүз
-  const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : 'orgs';
+  const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : type === 'event' ? 'events' : type === 'lost' ? 'lostfound' : 'orgs';
   delete window._cats[catType];
   const cats = await loadCatsForForm(catType);
   const sel = document.getElementById('f-cat');
@@ -952,7 +1174,7 @@ window.onCategoryChange = () => {
   const wrap = document.getElementById('subcat-wrap');
   const subSel = document.getElementById('f-subcat');
   if (!wrap || !subSel) return;
-  const catType = window._submitType === 'ad' ? 'ads' : window._submitType === 'job' ? 'jobs' : 'orgs';
+  const catType = window._submitType === 'ad' ? 'ads' : window._submitType === 'job' ? 'jobs' : window._submitType === 'event' ? 'events' : 'orgs';
   const catList = window._cats[catType] || [];
   const catObj = catList.find(c => c.name === catName);
   const subs = catObj?.subcategories || [];
@@ -1084,6 +1306,66 @@ function getFormHTML(type) {
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Кошумча маалымат..."></textarea>`;
 
+  if (type === 'lost') return `
+    <div class="form-section">Табылга түрү</div>
+    <div class="grid-2" style="margin-bottom:13px">
+      <label style="display:flex;align-items:center;gap:6px;border:1.5px solid var(--border);border-radius:10px;padding:11px;cursor:pointer">
+        <input type="radio" name="lf-type" value="lost" checked> 😟 Жоголду
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;border:1.5px solid var(--border);border-radius:10px;padding:11px;cursor:pointer">
+        <input type="radio" name="lf-type" value="found"> 😊 Таптым
+      </label>
+    </div>
+    ${imageUploadHTML()}
+    <label class="field-label">Эмне жоголду / табылды? *</label>
+    <input class="field-input" id="f-title" placeholder="мис: Ичи кызыл капчык">
+    <label class="field-label">Категория</label>
+    <select class="field-select" id="f-cat">
+      <option value="">— Жүктөлүүдө... —</option>
+    </select>
+    <label class="field-label">Кайда жоголду / табылды</label>
+    <input class="field-input" id="f-location" placeholder="мис: Борбордук базар">
+    <label class="field-label">Датасы</label>
+    <input class="field-input" id="f-lfdate" type="date">
+    <label class="field-label">Байланыш телефону</label>
+    <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">Сүрөттөмө</label>
+    <textarea class="field-textarea" id="f-desc" placeholder="Кошумча белгилери, чоо-жайы..."></textarea>`;
+
+  if (type === 'event') return `
+    <div class="form-section">Иш-чара маалыматы</div>
+    ${imageUploadHTML()}
+    <label class="field-label">Иш-чаранын аталышы *</label>
+    <input class="field-input" id="f-title" placeholder="мис: Жаз концерти">
+    <label class="field-label">Категория</label>
+    <select class="field-select" id="f-cat" onchange="onCategoryChange()">
+      <option value="">— Жүктөлүүдө... —</option>
+    </select>
+    <div id="subcat-wrap" style="display:none">
+      <label class="field-label">Субкатегория</label>
+      <select class="field-select" id="f-subcat">
+        <option value="">— Субкатегория тандаңыз —</option>
+      </select>
+    </div>
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Дата</label>
+        <input class="field-input" id="f-eventdate" type="date">
+      </div>
+      <div>
+        <label class="field-label">Убакыт</label>
+        <input class="field-input" id="f-eventtime" type="time">
+      </div>
+    </div>
+    <label class="field-label">Өтүүчү жери</label>
+    <input class="field-input" id="f-venue" placeholder="мис: Маданият үйү">
+    <label class="field-label">Кире баасы</label>
+    <input class="field-input" id="f-price" placeholder="мис: Акысыз же 200 сом">
+    <label class="field-label">Байланыш телефону</label>
+    <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">Сүрөттөмө</label>
+    <textarea class="field-textarea" id="f-desc" placeholder="Иш-чара жөнүндө кыскача..."></textarea>`;
+
   if (type === 'job') return `
     <div class="form-section">Жарыянын түрү</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
@@ -1182,10 +1464,10 @@ window._doSubmit = async () => {
     // Эмодзини категориядан автоматтык алабыз
     const catName = document.getElementById('f-cat')?.value || '';
     const subcatName = document.getElementById('f-subcat')?.value || '';
-    const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : 'orgs';
+    const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : type === 'event' ? 'events' : type === 'lost' ? 'lostfound' : 'orgs';
     const catList = window._cats[catType] || [];
     const catObj = catList.find(c => c.name === catName);
-    const autoEmoji = catObj ? catObj.emoji : (type === 'ad' ? '📦' : type === 'job' ? '💼' : '🏢');
+    const autoEmoji = catObj ? catObj.emoji : (type === 'ad' ? '📦' : type === 'job' ? '💼' : type === 'event' ? '🎭' : type === 'lost' ? '🧳' : '🏢');
 
     // Мөөнөт эсептөө
     const expiryDays = parseInt(document.getElementById('f-expiry')?.value || '30');
@@ -1218,6 +1500,17 @@ window._doSubmit = async () => {
       base.salary = document.getElementById('f-salary')?.value || '';
       base.jobType = document.getElementById('f-jobtype')?.value || '';
       base.jobMode = document.querySelector('input[name="job-mode"]:checked')?.value || 'give';
+    } else if (type === 'event') {
+      colName = 'events';
+      base.price = document.getElementById('f-price')?.value || '';
+      base.venue = document.getElementById('f-venue')?.value || '';
+      const eDate = document.getElementById('f-eventdate')?.value || '';
+      const eTime = document.getElementById('f-eventtime')?.value || '00:00';
+      base.eventDate = eDate ? new Date(`${eDate}T${eTime}`).toISOString() : '';
+    } else if (type === 'lost') {
+      colName = 'lostfound';
+      base.lfType = document.querySelector('input[name="lf-type"]:checked')?.value || 'lost';
+      base.lfDate = document.getElementById('f-lfdate')?.value || '';
     } else {
       colName = 'orgs';
       base.hours = document.getElementById('f-hours')?.value || '';
@@ -1259,7 +1552,7 @@ window._switchAdminTab = (tab) => {
 
 async function loadAdminPanel() {
   try {
-    const cols = ['ads','jobs','orgs'];
+    const cols = ['ads','jobs','orgs','events','lostfound'];
     const snaps = await Promise.all(cols.map(c => getDocs(collection(db,c))));
     const allDocs = snaps.flatMap(s => s.docs.map(d => d.data()));
     document.getElementById('adm-pending').textContent = allDocs.filter(d=>d.status==='pending').length;
@@ -1310,6 +1603,8 @@ window._adminAction = async (col, id, status) => {
     // Refresh public lists
     if (col==='ads') loadAds();
     else if (col==='jobs') loadJobs();
+    else if (col==='events') loadEvents();
+    else if (col==='lostfound') loadLostFound();
     else loadOrgs();
   } catch(e) { window._showToast('Ката кетти'); }
 };
@@ -1398,6 +1693,8 @@ async function loadMyPosts(col) {
       ads:  [['active','Активдүү'],['sold','Сатылды ✓']],
       jobs: [['active','Активдүү'],['hired','Табылды ✓']],
       orgs: [['active','Активдүү'],['closed','Жабылды ✗']],
+      events: [['active','Активдүү'],['closed','Аяктады ✗']],
+      lostfound: [['active','Активдүү'],['resolved','Ээси табылды ✓']],
     };
 
     el.innerHTML = myDocs.map(d => {
@@ -1479,6 +1776,8 @@ window.addEventListener('DOMContentLoaded', () => {
   loadAds();
   loadJobs();
   loadOrgs();
+  loadEvents();
+  loadLostFound();
 });
 
 window.addEventListener('screen-change', (e) => {
@@ -1489,7 +1788,7 @@ window.addEventListener('screen-change', (e) => {
 
 <script>
 // ─── NAVIGATION (module эмес, глобал) ────────────────────────
-const navScreens = ['home','ads','jobs','catalog','account','myposts','submit','detail','admin'];
+const navScreens = ['home','ads','jobs','catalog','events','lostfound','account','myposts','submit','detail','admin'];
 
 window.goScreen = (name) => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1601,6 +1900,8 @@ function goMyPosts(){ if(window._goMyPosts) window._goMyPosts(); else setTimeout
 function filterAds(c){ if(window._filterAds) window._filterAds(c); else setTimeout(()=>filterAds(c),100); }
 function filterJobs(c){ if(window._filterJobs) window._filterJobs(c); else setTimeout(()=>filterJobs(c),100); }
 function filterOrgs(c){ if(window._filterOrgs) window._filterOrgs(c); else setTimeout(()=>filterOrgs(c),100); }
+function filterEvents(c){ if(window._filterEvents) window._filterEvents(c); else setTimeout(()=>filterEvents(c),100); }
+function filterLostFound(){ if(window._filterLostFound) window._filterLostFound(); else setTimeout(()=>filterLostFound(),100); }
 function showToast(m){ if(window._showToast) window._showToast(m); else setTimeout(()=>showToast(m),100); }
 function showErr(i,m){ if(window._showErr) window._showErr(i,m); else setTimeout(()=>showErr(i,m),100); }
 </script></html>
