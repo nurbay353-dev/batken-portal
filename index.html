@@ -27,6 +27,17 @@
      <button onclick="goScreen('account')" style="background:none;border:none;font-size:1.3rem;cursor:pointer">👤</button>
     </div>
    </div>
+   <div class="info-strip" id="info-strip">
+    <div class="info-row-weather">
+     <div class="info-pill" id="info-weather"><span class="ic">🌤️</span><span>—°C</span></div>
+    </div>
+    <div class="info-row-currency">
+     <div class="info-pill" id="info-usd"><span class="ic">💵</span><span class="lbl">USD</span><span>—</span></div>
+     <div class="info-pill" id="info-rub"><span class="ic">🇷🇺</span><span class="lbl">RUB</span><span>—</span></div>
+     <div class="info-pill" id="info-tjs"><span class="ic">🇹🇯</span><span class="lbl">TJS</span><span>—</span></div>
+     <div class="info-pill" id="info-uzs"><span class="ic">🇺🇿</span><span class="lbl">100 UZS</span><span>—</span></div>
+    </div>
+   </div>
    <div class="hero">
     <div class="hero-eyebrow">Баткен шаары</div>
     <h1>Шаарыңыз<br><em>бир жерде</em></h1>
@@ -438,6 +449,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .hero-search button{background:var(--am);border:none;padding:0 16px;font-weight:700;cursor:pointer;color:#1E293B;font-size:.9rem}
 
 /* STATS */
+.info-strip{padding:10px 20px;background:#FFF7ED;border-bottom:1px solid var(--border)}
+.info-row-weather{margin-bottom:8px}
+.info-row-currency{display:flex;flex-wrap:wrap;gap:8px}
+.info-pill{display:inline-flex;align-items:center;gap:5px;background:#fff;border-radius:20px;padding:6px 13px;font-size:.78rem;font-weight:700;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.06);flex-shrink:0}
+.info-pill .ic{font-size:.95rem}
+.info-pill .lbl{color:var(--muted);font-weight:600;margin-right:1px}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-bottom:1px solid var(--border)}
 .stat{padding:12px 6px;text-align:center;border-right:1px solid var(--border)}
 .stat:last-child{border-right:none}
@@ -687,6 +704,74 @@ async function loadCatsForForm(type) {
     window._cats[type] = cats;
     return cats;
   } catch(e) { return []; }
+}
+
+// ─── АБА ЫРАЙЫ ЖАНА ВАЛЮТА КУРСУ ──────────────────────────────
+function weatherEmoji(code) {
+  if (code === 0) return '☀️';
+  if ([1,2,3].includes(code)) return '⛅';
+  if ([45,48].includes(code)) return '🌫️';
+  if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return '🌧️';
+  if ([71,73,75,77,85,86].includes(code)) return '❄️';
+  if ([95,96,99].includes(code)) return '⛈️';
+  return '🌤️';
+}
+
+function renderWeather(w) {
+  const el = document.getElementById('info-weather');
+  if (!el || !w) return;
+  const temp = Math.round(w.temperature);
+  el.innerHTML = `<span class="ic">${weatherEmoji(w.weathercode)}</span><span>Баткен ${temp}°C</span>`;
+}
+
+function renderCurrency(rates) {
+  if (!rates || !rates.KGS) return;
+  const usdKgs = rates.KGS;
+  const rubKgs = rates.RUB ? rates.KGS / rates.RUB : null;
+  const tjsKgs = rates.TJS ? rates.KGS / rates.TJS : null;
+  const uzsKgs100 = rates.UZS ? (rates.KGS / rates.UZS) * 100 : null;
+  const usdEl = document.getElementById('info-usd');
+  const rubEl = document.getElementById('info-rub');
+  const tjsEl = document.getElementById('info-tjs');
+  const uzsEl = document.getElementById('info-uzs');
+  if (usdEl) usdEl.innerHTML = `<span class="ic">💵</span><span class="lbl">USD</span><span>${usdKgs.toFixed(2)}</span>`;
+  if (rubEl && rubKgs) rubEl.innerHTML = `<span class="ic">🇷🇺</span><span class="lbl">RUB</span><span>${rubKgs.toFixed(2)}</span>`;
+  if (tjsEl && tjsKgs) tjsEl.innerHTML = `<span class="ic">🇹🇯</span><span class="lbl">TJS</span><span>${tjsKgs.toFixed(2)}</span>`;
+  if (uzsEl && uzsKgs100) uzsEl.innerHTML = `<span class="ic">🇺🇿</span><span class="lbl">100 UZS</span><span>${uzsKgs100.toFixed(2)}</span>`;
+}
+
+async function loadTopInfo() {
+  // Аба ырайы (Баткен шаары), 30 мүнөткө кэштелет
+  try {
+    const cached = JSON.parse(localStorage.getItem('bp_weather') || 'null');
+    if (cached && (Date.now() - cached.ts) < 30 * 60 * 1000) {
+      renderWeather(cached.data);
+    } else {
+      const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=40.061&longitude=70.818&current_weather=true&timezone=Asia%2FBishkek');
+      const j = await r.json();
+      localStorage.setItem('bp_weather', JSON.stringify({ts: Date.now(), data: j.current_weather}));
+      renderWeather(j.current_weather);
+    }
+  } catch(e) {
+    console.error('Аба ырайы жүктөлбөдү:', e);
+    const el = document.getElementById('info-weather');
+    if (el) el.innerHTML = '<span class="ic">🌤️</span><span>—</span>';
+  }
+
+  // Валюта курсу, 6 саатка кэштелет
+  try {
+    const cached = JSON.parse(localStorage.getItem('bp_currency') || 'null');
+    if (cached && (Date.now() - cached.ts) < 6 * 60 * 60 * 1000) {
+      renderCurrency(cached.data);
+    } else {
+      const r = await fetch('https://open.er-api.com/v6/latest/USD');
+      const j = await r.json();
+      localStorage.setItem('bp_currency', JSON.stringify({ts: Date.now(), data: j.rates}));
+      renderCurrency(j.rates);
+    }
+  } catch(e) {
+    console.error('Валюта курсу жүктөлбөдү:', e);
+  }
 }
 
 async function loadStats() {
@@ -1792,6 +1877,7 @@ window.deleteMyPost = async (col, id) => {
 
 // ─── INIT ─────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  loadTopInfo();
   loadStats();
   loadAds();
   loadJobs();
