@@ -186,7 +186,7 @@
   <div class="screen" id="screen-jobs">
    <div class="top-bar">
     <div class="top-bar-title">💼 Жумуш</div>
-    <button onclick="goSubmit('job')" style="background:var(--gr);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Вакансия</button>
+    <button onclick="goSubmit('job')" style="background:var(--gr);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Кошуу</button>
    </div>
    <div class="search-wrap">
     <input class="search-input" type="text" placeholder="🔍 Вакансия издөө..." id="jobs-search" oninput="filterJobs()">
@@ -200,7 +200,7 @@
   <div class="screen" id="screen-catalog">
    <div class="top-bar">
     <div class="top-bar-title">🏢 Ишканалар</div>
-    <button onclick="goSubmit('org')" style="background:var(--pu);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Уюм</button>
+    <button onclick="goSubmit('org')" style="background:var(--pu);color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Кошуу</button>
    </div>
    <div class="search-wrap">
     <input class="search-input" type="text" placeholder="🔍 Уюм издөө..." id="orgs-search" oninput="filterOrgs()">
@@ -1057,7 +1057,7 @@ window._showDetail = (type, id) => {
         ${item.phone?`
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
           <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 ${item.phone}</button>
-          <a href="https://wa.me/${'formatWhatsApp_placeholder'}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0" onclick="this.href='https://wa.me/'+formatWhatsApp('${item.phone}')">📱 WhatsApp жазуу</a>
+          <a href="https://wa.me/${formatWhatsApp(item.whatsapp||item.phone)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>
         </div>`:''}
       </div>`;
   } else if (type === 'job') {
@@ -1075,7 +1075,7 @@ window._showDetail = (type, id) => {
         ${item.phone?`
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
           <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 Байланышуу</button>
-          <a href="#" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0" onclick="this.href='https://wa.me/'+formatWhatsApp('${item.phone}')">📱 WhatsApp жазуу</a>
+          <a href="https://wa.me/${formatWhatsApp(item.whatsapp||item.phone)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>
         </div>`:''}
       </div>`;
   } else if (type === 'event') {
@@ -1091,6 +1091,7 @@ window._showDetail = (type, id) => {
         ${item.phone?`
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
           <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 ${item.phone}</button>
+          <a href="https://wa.me/${formatWhatsApp(item.whatsapp||item.phone)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>
         </div>`:''}
       </div>`;
   } else if (type === 'lost') {
@@ -1105,6 +1106,7 @@ window._showDetail = (type, id) => {
         ${item.phone?`
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
           <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 ${item.phone}</button>
+          <a href="https://wa.me/${formatWhatsApp(item.whatsapp||item.phone)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>
         </div>`:''}
       </div>`;
   } else {
@@ -1133,7 +1135,7 @@ window._showDetail = (type, id) => {
         </div>` : ''}
         <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
           ${item.phone?`<button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 Чалуу</button>`:''}
-          ${item.whatsapp?`<a href="https://wa.me/${formatWhatsApp(item.whatsapp)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>`:''}
+          ${(item.whatsapp||item.phone)?`<a href="https://wa.me/${formatWhatsApp(item.whatsapp||item.phone)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>`:''}
           ${item.instagram?`<a href="${item.instagram.startsWith('http')?item.instagram:'https://instagram.com/'+item.instagram.replace('@','')}" target="_blank" class="btn-call" style="background:#E1306C;text-decoration:none;margin-top:0">📸 Instagram'да ачуу</a>`:''}
           ${item.lat && item.lng?`<a href="https://www.google.com/maps?q=${item.lat},${item.lng}" target="_blank" class="btn-call" style="background:#4285F4;text-decoration:none;margin-top:0">🗺️ Google Maps'та ачуу</a>`:''}
         </div>
@@ -1302,6 +1304,8 @@ function getFormHTML(type) {
     <input class="field-input" id="f-location" placeholder="мис: Баткен борбору">
     <label class="field-label">Телефон</label>
     <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">📱 WhatsApp номери</label>
+    <input class="field-input" id="f-whatsapp" type="tel" placeholder="0700 123-456 (бош калтырсаңыз, телефон номери колдонулат)">
     ${expiryField}
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Кошумча маалымат..."></textarea>`;
@@ -1329,6 +1333,8 @@ function getFormHTML(type) {
     <input class="field-input" id="f-lfdate" type="date">
     <label class="field-label">Байланыш телефону</label>
     <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">📱 WhatsApp номери</label>
+    <input class="field-input" id="f-whatsapp" type="tel" placeholder="0700 123-456 (бош калтырсаңыз, телефон номери колдонулат)">
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Кошумча белгилери, чоо-жайы..."></textarea>`;
 
@@ -1363,6 +1369,8 @@ function getFormHTML(type) {
     <input class="field-input" id="f-price" placeholder="мис: Акысыз же 200 сом">
     <label class="field-label">Байланыш телефону</label>
     <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">📱 WhatsApp номери</label>
+    <input class="field-input" id="f-whatsapp" type="tel" placeholder="0700 123-456 (бош калтырсаңыз, телефон номери колдонулат)">
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Иш-чара жөнүндө кыскача..."></textarea>`;
 
@@ -1399,6 +1407,8 @@ function getFormHTML(type) {
     <input class="field-input" id="f-location" placeholder="мис: Баткен">
     <label class="field-label">Байланыш телефону</label>
     <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">📱 WhatsApp номери</label>
+    <input class="field-input" id="f-whatsapp" type="tel" placeholder="0700 123-456 (бош калтырсаңыз, телефон номери колдонулат)">
     ${expiryField}
     <label class="field-label">Сүрөттөмө / Талаптар</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Талаптар, шарттар..."></textarea>`;
@@ -1488,6 +1498,7 @@ window._doSubmit = async () => {
       subcategory: subcatName,
       description: document.getElementById('f-desc')?.value || '',
       phone: document.getElementById('f-phone')?.value || '',
+      whatsapp: document.getElementById('f-whatsapp')?.value || '',
       location: document.getElementById('f-location')?.value || '',
     };
 
@@ -1517,7 +1528,6 @@ window._doSubmit = async () => {
       base.address = document.getElementById('f-address')?.value || '';
       base.website = document.getElementById('f-website')?.value || '';
       base.instagram = document.getElementById('f-instagram')?.value || '';
-      base.whatsapp = document.getElementById('f-whatsapp')?.value || '';
       const lat = document.getElementById('f-lat')?.value || '';
       const lng = document.getElementById('f-lng')?.value || '';
       base.lat = lat;
@@ -1758,7 +1768,10 @@ window.changePostStatus = async (col, id, newStatus) => {
     await updateDoc(doc(db, col, id), { postStatus: newStatus });
     window._showToast('✅ Статус өзгөртүлдү');
     loadMyPosts(window._myTab);
-  } catch(e) { window._showToast('Ката кетти'); }
+  } catch(e) {
+    console.error('changePostStatus error:', e);
+    window._showToast(e.code === 'permission-denied' ? '⚠️ Уруксат жок: Firestore Rules' : 'Ката: ' + e.message);
+  }
 };
 
 window.deleteMyPost = async (col, id) => {
@@ -1767,7 +1780,14 @@ window.deleteMyPost = async (col, id) => {
     await deleteDoc(doc(db, col, id));
     window._showToast('🗑 Жарыя өчүрүлдү');
     loadMyPosts(window._myTab);
-  } catch(e) { window._showToast('Ката кетти'); }
+  } catch(e) {
+    console.error('deleteMyPost error:', e);
+    if (e.code === 'permission-denied') {
+      window._showToast('⚠️ Уруксат жок: Firestore Rules өчүрүүгө тыюу салган');
+    } else {
+      window._showToast('Ката: ' + e.message);
+    }
+  }
 };
 
 // ─── INIT ─────────────────────────────────────────────────────
