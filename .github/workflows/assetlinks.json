@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.nurbay353_dev.twa",
+        "sha256_cert_fingerprints": ["E2:71:83:67:1A:2A:FE:D4:EA:F4:C8:8E:DA:13:62:8F:84:AC:C6:31:70:7F:C6:F4:4C:25:99:45:E8:E8:B8:EC"]
+      }
+    }]
