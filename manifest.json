@@ -1,17 +1,44 @@
 {
+  "id": "/batken-portal/",
   "name": "Баткен Шаар Портал",
   "short_name": "Баткен",
   "description": "Баткен шаарынын санариптик портал — жарнамалар, жумуш, уюмдар",
   "start_url": "/batken-portal/",
   "scope": "/batken-portal/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#F8FAFC",
   "theme_color": "#C2410C",
   "orientation": "portrait",
+  "dir": "ltr",
+  "lang": "ky",
+  "prefer_related_applications": false,
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "categories": ["news", "lifestyle", "utilities"],
-  "lang": "ky"
+  "shortcuts": [
+    {
+      "name": "Жарнамалар",
+      "short_name": "Жарнама",
+      "description": "Акыркы жарнамаларды көрүү",
+      "url": "/batken-portal/?section=ads",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Жумуш",
+      "short_name": "Жумуш",
+      "description": "Акыркы вакансияларды көрүү",
+      "url": "/batken-portal/?section=jobs",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Табылгалар",
+      "short_name": "Табылга",
+      "description": "Жоголгон/табылган нерселер",
+      "url": "/batken-portal/?section=lostfound",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
