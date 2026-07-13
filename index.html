@@ -60,12 +60,20 @@
      <div class="stat-n" style="color:var(--pu)" id="stat-orgs">—</div>
      <div class="stat-l">Ишкана</div>
     </div>
+    <div class="stat">
+     <div class="stat-n" style="color:#DB2777" id="stat-events">—</div>
+     <div class="stat-l">Афиша</div>
+    </div>
+    <div class="stat">
+     <div class="stat-n" style="color:#2563EB" id="stat-lostfound">—</div>
+     <div class="stat-l">Табылгалар</div>
+    </div>
+   </div>
+   <div class="stats-row-2">
     <div class="stat" title="Баткен шаарынын мэриясы, 01.01.2025-ж. карата расмий маалымат">
      <div class="stat-n" style="color:var(--am)">36.8К</div>
      <div class="stat-l">Тургун</div>
     </div>
-   </div>
-   <div class="stats-row-2">
     <div class="stat">
      <div class="stat-n" style="color:var(--pu)" id="stat-users">—</div>
      <div class="stat-l">👥 Катталган</div>
@@ -468,8 +476,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .info-pill{display:inline-flex;align-items:center;gap:5px;background:#fff;border-radius:20px;padding:6px 13px;font-size:.78rem;font-weight:700;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.06);flex-shrink:0}
 .info-pill .ic{font-size:.95rem}
 .info-pill .lbl{color:var(--muted);font-weight:600;margin-right:1px}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-bottom:1px solid var(--border)}
-.stats-row-2{display:grid;grid-template-columns:repeat(2,1fr);background:var(--card);border-bottom:1px solid var(--border)}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);background:var(--card);border-bottom:1px solid var(--border)}
+.stats-row-2{display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border-bottom:1px solid var(--border)}
 .online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22C55E;margin-right:4px;box-shadow:0 0 0 rgba(34,197,94,.6);animation:pulse-dot 2s infinite}
 @keyframes pulse-dot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .stat{padding:12px 6px;text-align:center;border-right:1px solid var(--border)}
@@ -567,13 +575,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .form-section{font-family:'Nunito',sans-serif;font-weight:800;font-size:.9rem;color:var(--or);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px}
 .field-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;margin-bottom:13px;background:var(--bg);appearance:none}
 .field-textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:.88rem;outline:none;font-family:'Inter',sans-serif;margin-bottom:13px;resize:vertical;min-height:90px}
-.img-upload-box{border:1.5px dashed var(--border);border-radius:12px;padding:14px;text-align:center;margin-bottom:13px;background:var(--bg);cursor:pointer;position:relative;overflow:hidden}
-.img-upload-box.has-img{padding:0;border-style:solid}
-.img-upload-box input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.img-upload-placeholder{color:var(--muted);font-size:.85rem}
-.img-upload-placeholder div:first-child{font-size:1.8rem;margin-bottom:6px}
-.img-upload-preview{width:100%;height:160px;object-fit:cover;display:block;border-radius:11px}
-.img-upload-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:.9rem;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center}
+.img-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:13px}
+.img-thumb{position:relative;width:78px;height:78px;border-radius:10px;overflow:hidden;flex-shrink:0}
+.img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.img-thumb-remove{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border:none;width:20px;height:20px;border-radius:50%;font-size:.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
+.img-add-tile{width:78px;height:78px;border-radius:10px;border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;position:relative;color:var(--muted);font-size:.68rem;flex-shrink:0;background:var(--bg)}
+.img-add-tile div:first-child{font-size:1.3rem}
+.img-add-tile input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .card-img-real{width:100%;height:100%;object-fit:cover;display:block}
 .list-icon.has-img{overflow:hidden;padding:0}
 .list-icon img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
@@ -602,6 +610,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 
 /* DETAIL PAGE */
 .detail-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:linear-gradient(135deg,#FFEDD5,#FED7AA)}
+.detail-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;height:220px;position:relative}
+.detail-gallery img{width:100%;height:100%;object-fit:cover;flex:0 0 100%;scroll-snap-align:start}
+.detail-gallery-count{position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,.6);color:#fff;font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:20px;z-index:2}
 .detail-body{padding:18px 16px}
 .detail-title{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.2rem;line-height:1.3;margin-bottom:8px}
 .detail-price{font-size:1.2rem;font-weight:700;color:var(--or);margin-bottom:12px}
@@ -845,14 +856,18 @@ async function loadUserStats() {
 
 async function loadStats() {
   try {
-    const [a,j,o] = await Promise.all([
+    const [a,j,o,ev,lf] = await Promise.all([
       getDocs(collection(db,'ads')),
       getDocs(collection(db,'jobs')),
-      getDocs(collection(db,'orgs'))
+      getDocs(collection(db,'orgs')),
+      getDocs(collection(db,'events')),
+      getDocs(collection(db,'lostfound'))
     ]);
     document.getElementById('stat-ads').textContent = a.docs.filter(d=>d.data().status==='approved').length;
     document.getElementById('stat-jobs').textContent = j.docs.filter(d=>d.data().status==='approved').length;
     document.getElementById('stat-orgs').textContent = o.docs.filter(d=>d.data().status==='approved').length;
+    document.getElementById('stat-events').textContent = ev.docs.filter(d=>d.data().status==='approved').length;
+    document.getElementById('stat-lostfound').textContent = lf.docs.filter(d=>d.data().status==='approved').length;
   } catch(e){}
 }
 
@@ -1192,6 +1207,19 @@ window.setLfTypeFilter = (btn, val) => {
 };
 
 // ─── DETAIL ──────────────────────────────────────────────────
+function detailImageBlock(item, emoji, bgStyle) {
+  const imgs = (item.imageUrls && item.imageUrls.length) ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
+  if (imgs.length > 1) {
+    return `<div style="position:relative">
+      <div class="detail-gallery">${imgs.map(u=>`<img src="${u}">`).join('')}</div>
+      <div class="detail-gallery-count">📷 ${imgs.length}</div>
+    </div>`;
+  } else if (imgs.length === 1) {
+    return `<div class="detail-img" style="background:none"><img src="${imgs[0]}"></div>`;
+  }
+  return `<div class="detail-img" style="${bgStyle}">${emoji}</div>`;
+}
+
 window._showDetail = (type, id) => {
   window._prevScreen = document.querySelector('.screen.active').id.replace('screen-','');
   const item = (type==='ad'?window._allAds:type==='job'?window._allJobs:type==='event'?window._allEvents:type==='lost'?window._allLostFound:window._allOrgs).find(x=>x.id===id);
@@ -1199,7 +1227,7 @@ window._showDetail = (type, id) => {
   const el = document.getElementById('detail-content');
   if (type === 'ad') {
     el.innerHTML = `
-      <div class="detail-img" style="${item.imageUrl?'background:none':''}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'📦')}</div>
+      ${detailImageBlock(item, item.emoji||'📦', '')}
       <div class="detail-body">
         ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP жарнама</div>':''}
         <div class="detail-title">${item.title}</div>
@@ -1216,7 +1244,7 @@ window._showDetail = (type, id) => {
       </div>`;
   } else if (type === 'job') {
     el.innerHTML = `
-      <div class="detail-img" style="${item.imageUrl?'background:none':'background:linear-gradient(135deg,var(--gr-l),#86EFAC)'}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'💼')}</div>
+      ${detailImageBlock(item, item.emoji||'💼', 'background:linear-gradient(135deg,var(--gr-l),#86EFAC)')}
       <div class="detail-body">
         <div class="detail-title">${item.title}</div>
         <div style="color:var(--muted);font-size:.88rem;margin-bottom:12px">${item.company||''}</div>
@@ -1234,7 +1262,7 @@ window._showDetail = (type, id) => {
       </div>`;
   } else if (type === 'event') {
     el.innerHTML = `
-      <div class="detail-img" style="${item.imageUrl?'background:none':'background:linear-gradient(135deg,#FCE7F3,#FBCFE8)'}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'🎭')}</div>
+      ${detailImageBlock(item, item.emoji||'🎭', 'background:linear-gradient(135deg,#FCE7F3,#FBCFE8)')}
       <div class="detail-body">
         <div class="detail-title">${item.title}</div>
         ${item.price?`<div class="detail-price">${item.price}</div>`:''}
@@ -1250,7 +1278,7 @@ window._showDetail = (type, id) => {
       </div>`;
   } else if (type === 'lost') {
     el.innerHTML = `
-      <div class="detail-img" style="${item.imageUrl?'background:none':(item.lfType==='found'?'background:linear-gradient(135deg,#DCFCE7,#BBF7D0)':'background:linear-gradient(135deg,#FEE2E2,#FECACA)')}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'🧳')}</div>
+      ${detailImageBlock(item, item.emoji||'🧳', item.lfType==='found'?'background:linear-gradient(135deg,#DCFCE7,#BBF7D0)':'background:linear-gradient(135deg,#FEE2E2,#FECACA)')}
       <div class="detail-body">
         <div class="detail-title">${item.lfType==='found'?'😊 Табылды':'😟 Жоголду'} — ${item.title}</div>
         <div class="detail-row"><span class="detail-row-label">📍 Жери</span><span>${item.location||'Баткен'}</span></div>
@@ -1266,7 +1294,7 @@ window._showDetail = (type, id) => {
   } else {
     const open = isOpen(item.hours, item.open24);
     el.innerHTML = `
-      <div class="detail-img" style="${item.imageUrl?'background:none':'background:linear-gradient(135deg,var(--pu-l),#C4B5FD)'}">${item.imageUrl?`<img src="${item.imageUrl}">`:(item.emoji||'🏢')}</div>
+      ${detailImageBlock(item, item.emoji||'🏢', 'background:linear-gradient(135deg,var(--pu-l),#C4B5FD)')}
       <div class="detail-body">
         ${item.vip?'<div class="vip-dot" style="margin-bottom:8px">⭐ VIP ишкана</div>':''}
         <div class="detail-title">${item.title}</div>
@@ -1302,7 +1330,7 @@ window._showDetail = (type, id) => {
 window._goSubmit = async (type) => {
   if (!window._currentUser) { goScreen('account'); window._showToast('Алгач кириңиз'); return; }
   window._submitType = type;
-  window._pendingImageBlob = null;
+  window._pendingImageBlobs = [];
   const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу', event:'🎭 Иш-чара кошуу', lost:'🧳 Табылга кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
   document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
@@ -1344,85 +1372,107 @@ window.onCategoryChange = () => {
   }
 };
 
-// ─── СҮРӨТ ЖҮКТӨӨ ────────────────────────────────────────────
-window._pendingImageBlob = null;
+// ─── СҮРӨТ ЖҮКТӨӨ (5кө чейин) ──────────────────────────────────
+window._pendingImageBlobs = [];
 
 window.handleImageSelect = (input) => {
-  const file = input.files && input.files[0];
-  if (!file) return;
-  if (!file.type.startsWith('image/')) { window._showToast('Сүрөт файлын тандаңыз'); return; }
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  const grid = document.getElementById('img-upload-grid');
+  const maxImages = grid ? parseInt(grid.dataset.max || '5', 10) : 5;
+  const remaining = maxImages - window._pendingImageBlobs.length;
+  if (remaining <= 0) { window._showToast(`Көбү менен ${maxImages} сүрөт жүктөй аласыз`); input.value = ''; return; }
+  const toProcess = files.slice(0, remaining);
+  if (files.length > remaining) window._showToast(`Көбү менен ${maxImages} сүрөт; ${remaining} гана кошулду`);
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      // Canvas аркылуу компрессиялоо/чоңдугун азайтуу
-      const maxDim = 1280;
-      let w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) {
-        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
-        else { w = Math.round(w * maxDim / h); h = maxDim; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      canvas.toBlob((blob) => {
-        window._pendingImageBlob = blob;
-        const url = URL.createObjectURL(blob);
-        renderImagePreview(url);
-      }, 'image/jpeg', 0.8);
+  toProcess.forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Canvas аркылуу компрессиялоо/чоңдугун азайтуу
+        const maxDim = 1280;
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob((blob) => {
+          window._pendingImageBlobs.push(blob);
+          renderImageGrid();
+        }, 'image/jpeg', 0.8);
+      };
+      img.src = e.target.result;
     };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
 };
 
-function renderImagePreview(url) {
-  const box = document.getElementById('img-upload-box');
-  if (!box) return;
-  box.classList.add('has-img');
-  box.innerHTML = `
-    <img src="${url}" class="img-upload-preview">
-    <input type="file" accept="image/*" id="f-image" onchange="handleImageSelect(this)">
-    <button type="button" class="img-upload-remove" onclick="event.stopPropagation();removeSelectedImage()">✕</button>`;
-}
-
-window.removeSelectedImage = () => {
-  window._pendingImageBlob = null;
-  const box = document.getElementById('img-upload-box');
-  if (!box) return;
-  box.classList.remove('has-img');
-  box.innerHTML = `
-    <input type="file" accept="image/*" id="f-image" onchange="handleImageSelect(this)">
-    <div class="img-upload-placeholder" id="img-upload-placeholder">
-      <div>📷</div>
-      <div>Сүрөт тандоо үчүн басыңыз</div>
-    </div>`;
-};
-
-async function uploadPendingImage(colName, uid) {
-  if (!window._pendingImageBlob) return '';
-  try {
-    const path = `posts/${colName}/${uid}_${Date.now()}.jpg`;
-    const r = window._storageRef(window._storage, path);
-    await window._uploadBytes(r, window._pendingImageBlob, { contentType: 'image/jpeg' });
-    return await window._getDownloadURL(r);
-  } catch (e) {
-    console.error('Сүрөт жүктөөдө ката:', e);
-    window._showToast('⚠️ Сүрөт жүктөлбөй калды, бирок жарыя сакталды');
-    return '';
-  }
-}
-
-function imageUploadHTML() {
-  return `
-    <label class="field-label">📷 Сүрөт (милдеттүү эмес)</label>
-    <div class="img-upload-box" id="img-upload-box">
-      <input type="file" accept="image/*" id="f-image" onchange="handleImageSelect(this)">
-      <div class="img-upload-placeholder" id="img-upload-placeholder">
+function renderImageGrid() {
+  const grid = document.getElementById('img-upload-grid');
+  if (!grid) return;
+  const maxImages = parseInt(grid.dataset.max || '5', 10);
+  let html = window._pendingImageBlobs.map((blob, i) => `
+    <div class="img-thumb">
+      <img src="${URL.createObjectURL(blob)}">
+      <button type="button" class="img-thumb-remove" onclick="removeSelectedImage(${i})">✕</button>
+    </div>`).join('');
+  if (window._pendingImageBlobs.length < maxImages) {
+    html += `
+      <label class="img-add-tile">
+        <input type="file" accept="image/*" id="f-image" ${maxImages>1?'multiple':''} onchange="handleImageSelect(this)">
         <div>📷</div>
-        <div>Сүрөт тандоо үчүн басыңыз</div>
-      </div>
+        <div>Кошуу</div>
+      </label>`;
+  }
+  grid.innerHTML = html;
+}
+
+window.removeSelectedImage = (i) => {
+  window._pendingImageBlobs.splice(i, 1);
+  renderImageGrid();
+};
+
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+  ]);
+}
+
+async function uploadPendingImages(colName, uid) {
+  const urls = [];
+  for (let i = 0; i < window._pendingImageBlobs.length; i++) {
+    try {
+      const path = `posts/${colName}/${uid}_${Date.now()}_${i}.jpg`;
+      const r = window._storageRef(window._storage, path);
+      await withTimeout(window._uploadBytes(r, window._pendingImageBlobs[i], { contentType: 'image/jpeg' }), 15000);
+      urls.push(await withTimeout(window._getDownloadURL(r), 15000));
+    } catch(e) {
+      console.error('Сүрөт жүктөөдө ката:', e);
+    }
+  }
+  if (urls.length < window._pendingImageBlobs.length) {
+    window._showToast('⚠️ Кээ бир сүрөттөр жүктөлбөй калды (Storage орнотулган эмес окшойт), бирок жарыя сакталды');
+  }
+  return urls;
+}
+
+function imageUploadHTML(maxImages) {
+  maxImages = maxImages || 5;
+  return `
+    <label class="field-label">📷 Сүрөттөр (${maxImages}${maxImages===1?'ге':'кө'} чейин, милдеттүү эмес)</label>
+    <div class="img-grid" id="img-upload-grid" data-max="${maxImages}">
+      <label class="img-add-tile">
+        <input type="file" accept="image/*" id="f-image" ${maxImages>1?'multiple':''} onchange="handleImageSelect(this)">
+        <div>📷</div>
+        <div>Кошуу</div>
+      </label>
     </div>`;
 }
 
@@ -1439,7 +1489,7 @@ function getFormHTML(type) {
 
   if (type === 'ad') return `
     <div class="form-section">Негизги маалымат</div>
-    ${imageUploadHTML()}
+    ${imageUploadHTML(2)}
     <label class="field-label">Аталышы *</label>
     <input class="field-input" id="f-title" placeholder="мис: 3 бөлмөлүү батир сатылат">
     <label class="field-label">Баасы</label>
@@ -1474,7 +1524,7 @@ function getFormHTML(type) {
         <input type="radio" name="lf-type" value="found"> 😊 Таптым
       </label>
     </div>
-    ${imageUploadHTML()}
+    ${imageUploadHTML(2)}
     <label class="field-label">Эмне жоголду / табылды? *</label>
     <input class="field-input" id="f-title" placeholder="мис: Ичи кызыл капчык">
     <label class="field-label">Категория</label>
@@ -1494,7 +1544,7 @@ function getFormHTML(type) {
 
   if (type === 'event') return `
     <div class="form-section">Иш-чара маалыматы</div>
-    ${imageUploadHTML()}
+    ${imageUploadHTML(1)}
     <label class="field-label">Иш-чаранын аталышы *</label>
     <input class="field-input" id="f-title" placeholder="мис: Жаз концерти">
     <label class="field-label">Категория</label>
@@ -1541,7 +1591,7 @@ function getFormHTML(type) {
       </label>
     </div>
     <div class="form-section">Маалымат</div>
-    ${imageUploadHTML()}
+    ${imageUploadHTML(2)}
     <label class="field-label">Кызмат орду *</label>
     <input class="field-input" id="f-title" placeholder="мис: Математика мугалими">
     <label class="field-label">Компания / Мекеме</label>
@@ -1569,7 +1619,7 @@ function getFormHTML(type) {
 
   return `
     <div class="form-section">Ишкана маалыматы</div>
-    ${imageUploadHTML()}
+    ${imageUploadHTML(3)}
     <label class="field-label">Ишкананын аты *</label>
     <input class="field-input" id="f-title" placeholder="мис: Кафе Ала-Тоо">
     <label class="field-label">Категория</label>
@@ -1690,13 +1740,17 @@ window._doSubmit = async () => {
       base.rating = 0; base.reviews = 0; base.vip = false;
     }
 
-    if (window._pendingImageBlob) {
-      btn.textContent = 'Сүрөт жүктөлүүдө...';
-      base.imageUrl = await uploadPendingImage(colName, window._currentUser.uid);
+    if (window._pendingImageBlobs && window._pendingImageBlobs.length) {
+      btn.textContent = 'Сүрөттөр жүктөлүүдө...';
+      const urls = await uploadPendingImages(colName, window._currentUser.uid);
+      if (urls.length) {
+        base.imageUrl = urls[0]; // артка шайкештик үчүн (карточкаларда колдонулат)
+        base.imageUrls = urls;
+      }
     }
 
     await addDoc(collection(db, colName), base);
-    window._pendingImageBlob = null;
+    window._pendingImageBlobs = [];
     window._showToast('✅ Жиберилди! Модератор текшерет.');
     goScreen('home');
   } catch(e) {
