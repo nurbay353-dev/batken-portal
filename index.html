@@ -10,14 +10,6 @@
  <meta name="apple-mobile-web-app-title" content="Баткен">
  <title>Баткен — Шаар Портал</title>
  <link rel="manifest" href="manifest.json">
- <link rel="manifest" href="https://nurbay353-dev.github.io/batken-portal/.github/workflows/assetlinks.json">
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/batken-portal/service-worker.js');
-  });
-}
-</script>
  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 
@@ -68,9 +60,19 @@ if ('serviceWorker' in navigator) {
      <div class="stat-n" style="color:var(--pu)" id="stat-orgs">—</div>
      <div class="stat-l">Ишкана</div>
     </div>
-    <div class="stat">
-     <div class="stat-n" style="color:var(--am)">75К</div>
+    <div class="stat" title="Баткен шаарынын мэриясы, 01.01.2025-ж. карата расмий маалымат">
+     <div class="stat-n" style="color:var(--am)">36.8К</div>
      <div class="stat-l">Тургун</div>
+    </div>
+   </div>
+   <div class="stats-row-2">
+    <div class="stat">
+     <div class="stat-n" style="color:var(--pu)" id="stat-users">—</div>
+     <div class="stat-l">👥 Катталган</div>
+    </div>
+    <div class="stat">
+     <div class="stat-n" style="color:var(--gr)" id="stat-online"><span class="online-dot"></span>—</div>
+     <div class="stat-l">Онлайн</div>
     </div>
    </div>
    <div class="sec">
@@ -459,11 +461,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* STATS */
 .info-strip{padding:10px 20px;background:#FFF7ED;border-bottom:1px solid var(--border)}
 .info-row-weather{margin-bottom:8px}
-.info-row-currency{display:flex;flex-wrap:wrap;gap:8px}
+.info-row-weather .info-pill{width:100%;justify-content:flex-start;box-sizing:border-box}
+.info-row-currency{display:flex;gap:5px}
+.info-row-currency .info-pill{flex:1;min-width:0;justify-content:center;padding:6px 4px;gap:3px;font-size:clamp(.6rem,2.6vw,.78rem)}
+.info-row-currency .info-pill .lbl{margin-right:0}
 .info-pill{display:inline-flex;align-items:center;gap:5px;background:#fff;border-radius:20px;padding:6px 13px;font-size:.78rem;font-weight:700;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.06);flex-shrink:0}
 .info-pill .ic{font-size:.95rem}
 .info-pill .lbl{color:var(--muted);font-weight:600;margin-right:1px}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-bottom:1px solid var(--border)}
+.stats-row-2{display:grid;grid-template-columns:repeat(2,1fr);background:var(--card);border-bottom:1px solid var(--border)}
+.online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22C55E;margin-right:4px;box-shadow:0 0 0 rgba(34,197,94,.6);animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 6px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .stat{padding:12px 6px;text-align:center;border-right:1px solid var(--border)}
 .stat:last-child{border-right:none}
 .stat-n{font-family:'Nunito',sans-serif;font-size:1.2rem;font-weight:900;line-height:1}
@@ -615,7 +623,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .empty-state div{font-size:2.5rem;margin-bottom:10px}
 .empty-state p{font-size:.88rem}</style><script type="module">import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, getCountFromServer, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
 // ✅ FIREBASE CONFIG
@@ -652,6 +660,7 @@ window._allOrgs = [];
 window._adminTab = 'ads';
 
 // ─── AUTH STATE ─────────────────────────────────────────────
+window._presenceInterval = null;
 onAuthStateChanged(auth, user => {
   window._currentUser = user;
   if (user) {
@@ -662,11 +671,28 @@ onAuthStateChanged(auth, user => {
     document.getElementById('user-avatar').textContent = (user.displayName||'К')[0].toUpperCase();
     const isAdmin = ADMIN_EMAILS.includes(user.email);
     document.getElementById('admin-btn').style.display = isAdmin ? 'flex' : 'none';
+    // Колдонуучу профилин жазуу/жаңыртуу (катталгандар + онлайн эсеби үчүн)
+    touchUserPresence(user);
+    if (window._presenceInterval) clearInterval(window._presenceInterval);
+    window._presenceInterval = setInterval(() => touchUserPresence(user), 2 * 60 * 1000);
   } else {
     document.getElementById('auth-section').style.display = 'block';
     document.getElementById('user-section').style.display = 'none';
+    if (window._presenceInterval) { clearInterval(window._presenceInterval); window._presenceInterval = null; }
   }
 });
+
+async function touchUserPresence(user) {
+  try {
+    await setDoc(doc(db, 'users', user.uid), {
+      email: user.email,
+      displayName: user.displayName || '',
+      lastSeen: serverTimestamp(),
+    }, { merge: true });
+  } catch(e) {
+    console.error('touchUserPresence error:', e);
+  }
+}
 
 // ─── AUTH ────────────────────────────────────────────────────
 window._doLogin = async () => {
@@ -725,11 +751,27 @@ function weatherEmoji(code) {
   return '🌤️';
 }
 
+function weatherDescKy(code) {
+  const map = {
+    0: 'Күн ачык', 1: 'Негизинен ачык', 2: 'Бир аз булуттуу', 3: 'Булуттуу',
+    45: 'Туман', 48: 'Тумандуу',
+    51: 'Күүгүм жамгыр', 53: 'Жамгыр', 55: 'Катуу жамгыр',
+    56: 'Тоңгон жамгыр', 57: 'Катуу тоңгон жамгыр',
+    61: 'Күчсүз жамгыр', 63: 'Жамгыр жаайт', 65: 'Катуу жамгыр жаайт',
+    66: 'Тоңгон жамгыр', 67: 'Катуу тоңгон жамгыр',
+    71: 'Күчсүз кар', 73: 'Кар жаайт', 75: 'Катуу кар жаайт', 77: 'Кар түйүрчөгү',
+    80: 'Жамгыр чачыранды', 81: 'Жамгыр чачыранды', 82: 'Катуу жамгыр чачыранды',
+    85: 'Кар чачыранды', 86: 'Катуу кар чачыранды',
+    95: 'Күн күркүрөйт', 96: 'Мөндүр, күркүрөйт', 99: 'Катуу мөндүр, күркүрөйт'
+  };
+  return map[code] || 'Аба ырайы';
+}
+
 function renderWeather(w) {
   const el = document.getElementById('info-weather');
   if (!el || !w) return;
   const temp = Math.round(w.temperature);
-  el.innerHTML = `<span class="ic">${weatherEmoji(w.weathercode)}</span><span>Баткен ${temp}°C</span>`;
+  el.innerHTML = `<span class="ic">${weatherEmoji(w.weathercode)}</span><span>Баткен — ${weatherDescKy(w.weathercode)}, ${temp}°C</span>`;
 }
 
 function renderCurrency(rates) {
@@ -779,6 +821,25 @@ async function loadTopInfo() {
     }
   } catch(e) {
     console.error('Валюта курсу жүктөлбөдү:', e);
+  }
+}
+
+async function loadUserStats() {
+  try {
+    const totalSnap = await getCountFromServer(collection(db, 'users'));
+    document.getElementById('stat-users').textContent = totalSnap.data().count;
+  } catch(e) {
+    console.error('loadUserStats (total) error:', e);
+    document.getElementById('stat-users').textContent = '—';
+  }
+  try {
+    const fiveMinAgo = Timestamp.fromMillis(Date.now() - 5 * 60 * 1000);
+    const onlineQ = query(collection(db, 'users'), where('lastSeen', '>', fiveMinAgo));
+    const onlineSnap = await getCountFromServer(onlineQ);
+    document.getElementById('stat-online').textContent = onlineSnap.data().count;
+  } catch(e) {
+    console.error('loadUserStats (online) error:', e);
+    document.getElementById('stat-online').textContent = '—';
   }
 }
 
@@ -1887,11 +1948,13 @@ window.deleteMyPost = async (col, id) => {
 window.addEventListener('DOMContentLoaded', () => {
   loadTopInfo();
   loadStats();
+  loadUserStats();
   loadAds();
   loadJobs();
   loadOrgs();
   loadEvents();
   loadLostFound();
+  setInterval(loadUserStats, 2 * 60 * 1000);
 });
 
 window.addEventListener('screen-change', (e) => {
