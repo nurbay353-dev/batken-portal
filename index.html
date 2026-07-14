@@ -635,7 +635,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 .empty-state p{font-size:.88rem}</style><script type="module">import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, getCountFromServer, Timestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+// Firebase Storage's ордуна Cloudinary колдонулат (карта талап кылынбайт)
 
 // ✅ FIREBASE CONFIG
 const firebaseConfig = {
@@ -647,17 +647,16 @@ const firebaseConfig = {
   appId: "1:705755102053:web:8ce35ad4fffb68ff4c7f8c"
 };
 
+// ✅ CLOUDINARY CONFIG (сүрөт сактоо, карта талап кылынбайт)
+const CLOUDINARY_CLOUD_NAME = 'v6le9g4r';
+const CLOUDINARY_UPLOAD_PRESET = 'batken portal';
+
 // Админ emailдери (каалаган emailди кошсоңуз болот)
 const ADMIN_EMAILS = ['batkenlist@gmail.com'];
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
-window._storage = storage;
-window._storageRef = storageRef;
-window._uploadBytes = uploadBytes;
-window._getDownloadURL = getDownloadURL;
 
 // ─── ГЛОБАЛ STATE ───────────────────────────────────────────
 window._db = db;
@@ -1449,16 +1448,29 @@ async function uploadPendingImages(colName, uid) {
   const urls = [];
   for (let i = 0; i < window._pendingImageBlobs.length; i++) {
     try {
-      const path = `posts/${colName}/${uid}_${Date.now()}_${i}.jpg`;
-      const r = window._storageRef(window._storage, path);
-      await withTimeout(window._uploadBytes(r, window._pendingImageBlobs[i], { contentType: 'image/jpeg' }), 15000);
-      urls.push(await withTimeout(window._getDownloadURL(r), 15000));
+      const formData = new FormData();
+      formData.append('file', window._pendingImageBlobs[i], `${uid}_${Date.now()}_${i}.jpg`);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', `posts/${colName}`);
+      const res = await withTimeout(
+        fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+          method: 'POST',
+          body: formData
+        }),
+        20000
+      );
+      const data = await res.json();
+      if (data.secure_url) {
+        urls.push(data.secure_url);
+      } else {
+        console.error('Cloudinary жооп катасы:', data);
+      }
     } catch(e) {
       console.error('Сүрөт жүктөөдө ката:', e);
     }
   }
   if (urls.length < window._pendingImageBlobs.length) {
-    window._showToast('⚠️ Кээ бир сүрөттөр жүктөлбөй калды (Storage орнотулган эмес окшойт), бирок жарыя сакталды');
+    window._showToast('⚠️ Кээ бир сүрөттөр жүктөлбөй калды, бирок жарыя сакталды');
   }
   return urls;
 }
