@@ -1446,6 +1446,7 @@ function withTimeout(promise, ms) {
 
 async function uploadPendingImages(colName, uid) {
   const urls = [];
+  let lastError = '';
   for (let i = 0; i < window._pendingImageBlobs.length; i++) {
     try {
       const formData = new FormData();
@@ -1463,14 +1464,16 @@ async function uploadPendingImages(colName, uid) {
       if (data.secure_url) {
         urls.push(data.secure_url);
       } else {
+        lastError = (data.error && data.error.message) ? data.error.message : JSON.stringify(data);
         console.error('Cloudinary жооп катасы:', data);
       }
     } catch(e) {
+      lastError = e.message || String(e);
       console.error('Сүрөт жүктөөдө ката:', e);
     }
   }
   if (urls.length < window._pendingImageBlobs.length) {
-    window._showToast('⚠️ Кээ бир сүрөттөр жүктөлбөй калды, бирок жарыя сакталды');
+    window._showToast('⚠️ Сүрөт жүктөлбөдү: ' + (lastError || 'белгисиз ката'), 7000);
   }
   return urls;
 }
@@ -1877,10 +1880,10 @@ window._showErr = (id, msg) => {
   el.textContent = msg; el.style.display = 'block';
 };
 
-window._showToast = (msg) => {
+window._showToast = (msg, duration) => {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
+  setTimeout(() => el.classList.remove('show'), duration || 2800);
 };
 
 window._goMyPosts = () => {
