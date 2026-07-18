@@ -108,6 +108,10 @@
 <div class="quick-icon" style="background:#DBEAFE">🧳</div>
 <div class="quick-label">Табылгалар</div>
 </button>
+     <button class="quick-item" onclick="goScreen('charity')">
+<div class="quick-icon" style="background:#FEE2E2">❤️</div>
+<div class="quick-label">Кайрымдуулук</div>
+</button>
      <button class="quick-item" onclick="goScreen('account')">
 <div class="quick-icon" style="background:var(--am-l)">👤</div>
 <div class="quick-label">Аккаунт</div>
@@ -132,6 +136,16 @@
     </div>
    </div>
    <div class="hscroll" id="home-events-scroll">
+    <div class="spinner"></div>
+   </div>
+   <div class="divider"></div>
+   <div class="sec">
+    <div class="sec-hdr">
+     <div class="sec-title">❤️ Кайрымдуулук иш-чаралары</div>
+     <button class="sec-more" onclick="goScreen('charity')">Баары →</button>
+    </div>
+   </div>
+   <div class="hscroll" id="home-charity-scroll">
     <div class="spinner"></div>
    </div>
    <div class="divider"></div>
@@ -176,6 +190,20 @@
    </div>
    <div class="filter-bar" id="ads-filters"></div>
    <div class="list-wrap" id="ads-list">
+    <div class="spinner"></div>
+   </div>
+  </div>
+  <!-- ==================== КАЙРЫМДУУЛУК ==================== -->
+  <div class="screen" id="screen-charity">
+   <div class="top-bar">
+    <div class="top-bar-title">❤️ Кайрымдуулук</div>
+    <button onclick="goSubmit('charity')" style="background:#DC2626;color:#fff;border:none;padding:6px 13px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer">+ Кошуу</button>
+   </div>
+   <div class="search-wrap">
+    <input class="search-input" type="text" placeholder="🔍 Кайрымдуулук издөө..." id="charity-search" oninput="filterCharity()">
+   </div>
+   <div class="filter-bar" id="charity-filters"></div>
+   <div class="list-wrap" id="charity-list">
     <div class="spinner"></div>
    </div>
   </div>
@@ -363,6 +391,7 @@ Admin панели
     <button class="admin-tab" onclick="switchAdminTab('orgs')" id="atab-orgs">🏢 Ишканалар</button>
     <button class="admin-tab" onclick="switchAdminTab('events')" id="atab-events">🎭 Афиша</button>
     <button class="admin-tab" onclick="switchAdminTab('lostfound')" id="atab-lostfound">🧳 Табылгалар</button>
+    <button class="admin-tab" onclick="switchAdminTab('charity')" id="atab-charity">❤️ Кайрымдуулук</button>
    </div>
    <div class="list-wrap" style="padding-top:12px" id="admin-list">
     <div class="spinner"></div>
@@ -382,6 +411,7 @@ Admin панели
     <button class="admin-tab" onclick="switchMyTab('orgs')" id="mytab-orgs">🏢 Ишканалар</button>
     <button class="admin-tab" onclick="switchMyTab('events')" id="mytab-events">🎭 Афиша</button>
     <button class="admin-tab" onclick="switchMyTab('lostfound')" id="mytab-lostfound">🧳 Табылгалар</button>
+    <button class="admin-tab" onclick="switchMyTab('charity')" id="mytab-charity">❤️ Кайрымдуулук</button>
    </div>
    <div class="list-wrap" style="padding-top:12px" id="myposts-list">
     <div class="spinner"></div>
@@ -513,6 +543,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);displ
 /* LIST CARDS (ads/jobs/orgs full list) */
 .list-wrap{padding:0 16px 8px}
 .list-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:14px;margin-bottom:10px;cursor:pointer;transition:.15s;display:flex;gap:12px;align-items:flex-start}
+.charity-progress{width:100%;height:8px;border-radius:20px;background:#FEE2E2;overflow:hidden;margin-top:10px}
+.charity-progress-fill{height:100%;background:#DC2626;border-radius:20px;transition:width .3s}
+.charity-progress-nums{font-size:.72rem;color:var(--muted);font-weight:700;margin-top:4px}
 .list-card:active{transform:scale(.98)}
 .list-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
 .list-body{flex:1;min-width:0}
@@ -954,6 +987,23 @@ async function loadLostFound() {
   }
 }
 
+async function loadCharity() {
+  try {
+    const snap = await getDocs(collection(db,'charity'));
+    window._allCharity = snap.docs.map(d => ({id:d.id,...d.data()}))
+      .filter(x => x.status === 'approved')
+      .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderCharity(window._allCharity);
+    renderHomeCharity(window._allCharity.slice(0,6));
+    const cats = [...new Set(window._allCharity.map(x=>x.category).filter(Boolean))];
+    await loadCatsForForm('charity');
+    renderFilters('charity-filters', cats, filterCharity, 'charity');
+  } catch(e){
+    console.error('loadCharity error:',e);
+    document.getElementById('charity-list').innerHTML = '<div class="empty-state"><div>❤️</div><p>Маалыматтарды жүктөөдө ката кетти</p></div>';
+  }
+}
+
 // ─── RENDER ──────────────────────────────────────────────────
 function renderHomeAds(ads) {
   const el = document.getElementById('home-ads-scroll');
@@ -993,6 +1043,30 @@ function renderHomeEvents(events) {
         <div class="ad-title-s">${x.title}</div>
         ${x.eventDate?`<div class="ad-price-s">📅 ${formatEventDate(x.eventDate)}</div>`:''}
         <div class="ad-meta-s">📍 ${x.venue||'Баткен'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function charityProgressBar(item) {
+  const goal = parseFloat(item.goalAmount) || 0;
+  const raised = parseFloat(item.raisedAmount) || 0;
+  const pct = goal > 0 ? Math.min(100, Math.round(raised / goal * 100)) : 0;
+  return `
+    <div class="charity-progress"><div class="charity-progress-fill" style="width:${pct}%"></div></div>
+    <div class="charity-progress-nums">${raised.toLocaleString()} / ${goal.toLocaleString()} сом (${pct}%)</div>`;
+}
+
+function renderHomeCharity(items) {
+  const el = document.getElementById('home-charity-scroll');
+  if (!el) return;
+  if (!items.length) { el.innerHTML = '<div class="empty-state" style="min-width:200px"><div>❤️</div><p>Кайрымдуулук жок</p></div>'; return; }
+  el.innerHTML = items.map(x => `
+    <div class="ad-card-h" onclick="showDetail('charity','${x.id}')">
+      <div class="ad-card-img${x.imageUrl?' has-img':''}" style="${x.imageUrl?'':'background:linear-gradient(135deg,#FEE2E2,#FECACA)'}">${x.imageUrl?`<img src="${x.imageUrl}" class="card-img-real">`:(x.emoji||'❤️')}</div>
+      <div class="ad-card-body">
+        <div class="ad-cat-tag">${x.category||''}</div>
+        <div class="ad-title-s">${x.title}</div>
+        ${charityProgressBar(x)}
       </div>
     </div>`).join('');
 }
@@ -1131,6 +1205,23 @@ function renderEvents(events) {
     </div>`).join('');
 }
 
+function renderCharity(items) {
+  const el = document.getElementById('charity-list');
+  if (!el) return;
+  if (!items.length) { el.innerHTML = '<div class="empty-state"><div>❤️</div><p>Кайрымдуулук иш-чарасы табылган жок</p></div>'; return; }
+  el.innerHTML = items.map(x => `
+    <div class="list-card" onclick="showDetail('charity','${x.id}')" style="flex-direction:column;align-items:stretch">
+      <div style="display:flex;gap:12px">
+        <div class="list-icon${x.imageUrl?' has-img':''}" style="${x.imageUrl?'':'background:#FEE2E2'}">${x.imageUrl?`<img src="${x.imageUrl}">`:(x.emoji||'❤️')}</div>
+        <div class="list-body">
+          <div class="list-title">${x.title}</div>
+          <div class="list-sub">${x.category||''}</div>
+        </div>
+      </div>
+      ${charityProgressBar(x)}
+    </div>`).join('');
+}
+
 function renderLostFound(items) {
   const el = document.getElementById('lostfound-list');
   if (!el) return;
@@ -1191,6 +1282,13 @@ window._filterEvents = (cat) => {
   if (s) arr = arr.filter(x => x.title.toLowerCase().includes(s) || (x.venue||'').toLowerCase().includes(s));
   renderEvents(arr);
 };
+window._filterCharity = (cat) => {
+  const s = document.getElementById('charity-search').value.toLowerCase();
+  let arr = window._allCharity || [];
+  if (cat) arr = arr.filter(x => x.category === cat);
+  if (s) arr = arr.filter(x => x.title.toLowerCase().includes(s));
+  renderCharity(arr);
+};
 window._filterLostFound = () => {
   const s = document.getElementById('lostfound-search').value.toLowerCase();
   let arr = window._allLostFound || [];
@@ -1221,7 +1319,7 @@ function detailImageBlock(item, emoji, bgStyle) {
 
 window._showDetail = (type, id) => {
   window._prevScreen = document.querySelector('.screen.active').id.replace('screen-','');
-  const item = (type==='ad'?window._allAds:type==='job'?window._allJobs:type==='event'?window._allEvents:type==='lost'?window._allLostFound:window._allOrgs).find(x=>x.id===id);
+  const item = (type==='ad'?window._allAds:type==='job'?window._allJobs:type==='event'?window._allEvents:type==='lost'?window._allLostFound:type==='charity'?window._allCharity:window._allOrgs).find(x=>x.id===id);
   if (!item) return;
   const el = document.getElementById('detail-content');
   if (type === 'ad') {
@@ -1290,6 +1388,21 @@ window._showDetail = (type, id) => {
           <a href="https://wa.me/${formatWhatsApp(item.whatsapp||item.phone)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>
         </div>`:''}
       </div>`;
+  } else if (type === 'charity') {
+    el.innerHTML = `
+      ${detailImageBlock(item, item.emoji||'❤️', 'background:linear-gradient(135deg,#FEE2E2,#FECACA)')}
+      <div class="detail-body">
+        <div class="detail-title">${item.title}</div>
+        <div class="detail-row"><span class="detail-row-label">🗂 Категория</span><span>${item.category||'—'}</span></div>
+        <div style="margin:14px 0">${charityProgressBar(item)}</div>
+        ${item.cardNumber?`<div class="detail-row"><span class="detail-row-label">💳 Карта номери</span><span>${item.cardNumber}</span></div>`:''}
+        ${item.description?`<div class="detail-content">${item.description}</div>`:''}
+        ${item.phone?`
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          <button class="btn-call" onclick="window.location='tel:${item.phone}'" style="margin-top:0">📞 ${item.phone}</button>
+          <a href="https://wa.me/${formatWhatsApp(item.whatsapp||item.phone)}" target="_blank" class="btn-call" style="background:#25D366;text-decoration:none;margin-top:0">📱 WhatsApp жазуу</a>
+        </div>`:''}
+      </div>`;
   } else {
     const open = isOpen(item.hours, item.open24);
     el.innerHTML = `
@@ -1330,12 +1443,12 @@ window._goSubmit = async (type) => {
   if (!window._currentUser) { goScreen('account'); window._showToast('Алгач кириңиз'); return; }
   window._submitType = type;
   window._pendingImageBlobs = [];
-  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу', event:'🎭 Иш-чара кошуу', lost:'🧳 Табылга кошуу'};
+  const titles = {ad:'📋 Жарнама кошуу', job:'💼 Вакансия кошуу', org:'🏢 Ишкана кошуу', event:'🎭 Иш-чара кошуу', lost:'🧳 Табылга кошуу', charity:'❤️ Кайрымдуулук кошуу'};
   document.getElementById('submit-title').textContent = titles[type];
   document.getElementById('submit-form-content').innerHTML = getFormHTML(type);
   document.getElementById('submit-error').style.display = 'none';
   // Кэшти тазалап Firebase'ден жаңы жүктөйбүз
-  const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : type === 'event' ? 'events' : type === 'lost' ? 'lostfound' : 'orgs';
+  const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : type === 'event' ? 'events' : type === 'lost' ? 'lostfound' : type === 'charity' ? 'charity' : 'orgs';
   delete window._cats[catType];
   const cats = await loadCatsForForm(catType);
   const sel = document.getElementById('f-cat');
@@ -1529,6 +1642,34 @@ function getFormHTML(type) {
     <label class="field-label">Сүрөттөмө</label>
     <textarea class="field-textarea" id="f-desc" placeholder="Кошумча маалымат..."></textarea>`;
 
+  if (type === 'charity') return `
+    <div class="form-section">Кайрымдуулук маалыматы</div>
+    ${imageUploadHTML(2)}
+    <label class="field-label">Аталышы *</label>
+    <input class="field-input" id="f-title" placeholder="мис: Балага операция үчүн жардам">
+    <label class="field-label">Категория</label>
+    <select class="field-select" id="f-cat">
+      <option value="">— Жүктөлүүдө... —</option>
+    </select>
+    <div class="grid-2">
+      <div>
+        <label class="field-label">Максаттуу сумма (сом)</label>
+        <input class="field-input" id="f-goal" type="number" placeholder="500000">
+      </div>
+      <div>
+        <label class="field-label">Учурда чогулган (сом)</label>
+        <input class="field-input" id="f-raised" type="number" placeholder="0" value="0">
+      </div>
+    </div>
+    <label class="field-label">Которуу үчүн карта номери</label>
+    <input class="field-input" id="f-cardnumber" placeholder="мис: 4169 xxxx xxxx xxxx">
+    <label class="field-label">Байланыш телефону</label>
+    <input class="field-input" id="f-phone" type="tel" placeholder="0700 123-456">
+    <label class="field-label">📱 WhatsApp номери</label>
+    <input class="field-input" id="f-whatsapp" type="tel" placeholder="0700 123-456 (бош калтырсаңыз, телефон номери колдонулат)">
+    <label class="field-label">Сүрөттөмө *</label>
+    <textarea class="field-textarea" id="f-desc" placeholder="Кайрымдуулуктун максаты, чоо-жайы..."></textarea>`;
+
   if (type === 'lost') return `
     <div class="form-section">Табылга түрү</div>
     <div class="grid-2" style="margin-bottom:13px">
@@ -1693,10 +1834,10 @@ window._doSubmit = async () => {
     // Эмодзини категориядан автоматтык алабыз
     const catName = document.getElementById('f-cat')?.value || '';
     const subcatName = document.getElementById('f-subcat')?.value || '';
-    const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : type === 'event' ? 'events' : type === 'lost' ? 'lostfound' : 'orgs';
+    const catType = type === 'ad' ? 'ads' : type === 'job' ? 'jobs' : type === 'event' ? 'events' : type === 'lost' ? 'lostfound' : type === 'charity' ? 'charity' : 'orgs';
     const catList = window._cats[catType] || [];
     const catObj = catList.find(c => c.name === catName);
-    const autoEmoji = catObj ? catObj.emoji : (type === 'ad' ? '📦' : type === 'job' ? '💼' : type === 'event' ? '🎭' : type === 'lost' ? '🧳' : '🏢');
+    const autoEmoji = catObj ? catObj.emoji : (type === 'ad' ? '📦' : type === 'job' ? '💼' : type === 'event' ? '🎭' : type === 'lost' ? '🧳' : type === 'charity' ? '❤️' : '🏢');
 
     // Мөөнөт эсептөө
     const expiryDays = parseInt(document.getElementById('f-expiry')?.value || '30');
@@ -1741,6 +1882,11 @@ window._doSubmit = async () => {
       colName = 'lostfound';
       base.lfType = document.querySelector('input[name="lf-type"]:checked')?.value || 'lost';
       base.lfDate = document.getElementById('f-lfdate')?.value || '';
+    } else if (type === 'charity') {
+      colName = 'charity';
+      base.goalAmount = parseFloat(document.getElementById('f-goal')?.value) || 0;
+      base.raisedAmount = parseFloat(document.getElementById('f-raised')?.value) || 0;
+      base.cardNumber = document.getElementById('f-cardnumber')?.value || '';
     } else {
       colName = 'orgs';
       base.hours = document.getElementById('f-hours')?.value || '';
@@ -1785,7 +1931,7 @@ window._switchAdminTab = (tab) => {
 
 async function loadAdminPanel() {
   try {
-    const cols = ['ads','jobs','orgs','events','lostfound'];
+    const cols = ['ads','jobs','orgs','events','lostfound','charity'];
     const snaps = await Promise.all(cols.map(c => getDocs(collection(db,c))));
     const allDocs = snaps.flatMap(s => s.docs.map(d => d.data()));
     document.getElementById('adm-pending').textContent = allDocs.filter(d=>d.status==='pending').length;
@@ -1838,6 +1984,7 @@ window._adminAction = async (col, id, status) => {
     else if (col==='jobs') loadJobs();
     else if (col==='events') loadEvents();
     else if (col==='lostfound') loadLostFound();
+    else if (col==='charity') loadCharity();
     else loadOrgs();
   } catch(e) { window._showToast('Ката кетти'); }
 };
@@ -1928,6 +2075,7 @@ async function loadMyPosts(col) {
       orgs: [['active','Активдүү'],['closed','Жабылды ✗']],
       events: [['active','Активдүү'],['closed','Аяктады ✗']],
       lostfound: [['active','Активдүү'],['resolved','Ээси табылды ✓']],
+      charity: [['active','Активдүү'],['closed','Аяктады ✗']],
     };
 
     el.innerHTML = myDocs.map(d => {
@@ -1979,12 +2127,33 @@ async function loadMyPosts(col) {
             🗑 Өчүрүү
           </button>
         </div>
+        ${col === 'charity' ? `
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <input type="number" id="raised-${id}" value="${it.raisedAmount||0}" placeholder="Чогулган сумма"
+            style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:.82rem;font-family:'Inter',sans-serif">
+          <button onclick="updateRaisedAmount('${id}')"
+            style="background:#FEE2E2;color:#DC2626;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap">
+            ❤️ Сумманы жаңылоо
+          </button>
+        </div>` : ''}
       </div>`;
     }).join('');
   } catch(e) {
     el.innerHTML = '<div class="empty-state"><div>⚠️</div><p>Жүктөөдө ката кетти</p></div>';
   }
 }
+
+window.updateRaisedAmount = async (id) => {
+  try {
+    const val = parseFloat(document.getElementById(`raised-${id}`).value) || 0;
+    await updateDoc(doc(db, 'charity', id), { raisedAmount: val });
+    window._showToast('✅ Чогулган сумма жаңыланды');
+    loadCharity();
+  } catch(e) {
+    console.error('updateRaisedAmount error:', e);
+    window._showToast(e.code === 'permission-denied' ? '⚠️ Уруксат жок: Firestore Rules' : 'Ката: ' + e.message);
+  }
+};
 
 window.changePostStatus = async (col, id, newStatus) => {
   try {
@@ -2023,6 +2192,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadOrgs();
   loadEvents();
   loadLostFound();
+  loadCharity();
   setInterval(loadUserStats, 2 * 60 * 1000);
 });
 
@@ -2034,7 +2204,7 @@ window.addEventListener('screen-change', (e) => {
 
 <script>
 // ─── NAVIGATION (module эмес, глобал) ────────────────────────
-const navScreens = ['home','ads','jobs','catalog','events','lostfound','account','myposts','submit','detail','admin'];
+const navScreens = ['home','ads','jobs','catalog','events','lostfound','charity','account','myposts','submit','detail','admin'];
 
 window.goScreen = (name) => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -2147,6 +2317,7 @@ function filterAds(c){ if(window._filterAds) window._filterAds(c); else setTimeo
 function filterJobs(c){ if(window._filterJobs) window._filterJobs(c); else setTimeout(()=>filterJobs(c),100); }
 function filterOrgs(c){ if(window._filterOrgs) window._filterOrgs(c); else setTimeout(()=>filterOrgs(c),100); }
 function filterEvents(c){ if(window._filterEvents) window._filterEvents(c); else setTimeout(()=>filterEvents(c),100); }
+function filterCharity(c){ if(window._filterCharity) window._filterCharity(c); else setTimeout(()=>filterCharity(c),100); }
 function filterLostFound(){ if(window._filterLostFound) window._filterLostFound(); else setTimeout(()=>filterLostFound(),100); }
 function showToast(m){ if(window._showToast) window._showToast(m); else setTimeout(()=>showToast(m),100); }
 function showErr(i,m){ if(window._showErr) window._showErr(i,m); else setTimeout(()=>showErr(i,m),100); }
